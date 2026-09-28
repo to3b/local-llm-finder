@@ -36,4 +36,20 @@ const balanced4090 = run();
 assert.ok(balanced4090.matches[0].quality >= 92);
 assert.ok(balanced4090.matches[0].model.parametersB >= 14);
 
-console.log('Ranking regression checks passed for large Macs, speed-first mode and balanced high-end GPUs.');
+// Strongest means quality-first. With no explicit speed floor, a faster 8B model
+// must not beat a materially stronger model merely because it produces more tokens/s.
+const strongest5090 = run({
+  vramGB: 32, ramGB: 64, bandwidthGBs: 1792,
+  useCases: ['reasoning'], primaryUse: 'reasoning', preference: 5, minSpeed: 1
+});
+const best5090Quality = Math.max(...strongest5090.catalog.map(item => item.quality));
+assert.equal(strongest5090.matches[0].quality, best5090Quality);
+assert.ok(strongest5090.matches[0].model.parametersB >= 14);
+
+const strongest48 = run({
+  vramGB: 48, ramGB: 128, bandwidthGBs: 960,
+  useCases: ['reasoning'], primaryUse: 'reasoning', preference: 5, minSpeed: 1
+});
+assert.equal(strongest48.matches[0].quality, Math.max(...strongest48.catalog.map(item => item.quality)));
+
+console.log('Ranking regression checks passed for large Macs, speed-first mode, balanced high-end GPUs and quality-first Strongest mode.');
