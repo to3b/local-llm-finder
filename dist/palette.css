@@ -172,8 +172,7 @@ body::after {
   margin-top: 0;
 }
 
-/* Make the top recommendation unmistakable. Equal displayed score/speed ties
-   receive the same #1 treatment in copy-tune.js. */
+/* The recommendation engine marks ranking-equivalent top choices directly. */
 .match-list > .model-row.top-choice {
   margin: 9px 0 11px;
   border: 1px solid #77767a;
