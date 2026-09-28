@@ -38,6 +38,65 @@ function enhancePriority() {
   sync();
 }
 
+function syncSpeedSummary() {
+  const input = document.querySelector('#speed-input');
+  const summary = document.querySelector('#advanced-summary');
+  if (!input || !summary) return;
+  if (input.value === '1') summary.textContent = summary.textContent.replace(/(?:1|—) tok\/s min/g, 'No speed minimum');
+}
+
+function enhanceSpeedFloor() {
+  const field = document.querySelector('#speed-field');
+  const input = document.querySelector('#speed-input');
+  if (!field || !input || field.dataset.speedEnhanced) return;
+  field.dataset.speedEnhanced = 'true';
+
+  if (input.value === '15' || input.value === '10' || !input.value) input.value = '1';
+  const label = field.querySelector('label');
+  if (label) {
+    label.textContent = 'Minimum speed';
+    label.htmlFor = 'speed-choice';
+  }
+
+  const select = document.createElement('select');
+  select.id = 'speed-choice';
+  select.setAttribute('aria-label', 'Minimum estimated speed');
+  select.innerHTML = [
+    ['1', 'No minimum'],
+    ['5', '5 tok/s'],
+    ['10', '10 tok/s'],
+    ['15', '15 tok/s'],
+    ['20', '20 tok/s'],
+    ['30', '30 tok/s'],
+    ['50', '50 tok/s']
+  ].map(([value, text]) => `<option value="${value}">${text}</option>`).join('');
+  select.value = input.value;
+
+  input.hidden = true;
+  input.setAttribute('aria-hidden', 'true');
+  input.insertAdjacentElement('afterend', select);
+  if (!field.querySelector('.field-help')) {
+    select.insertAdjacentHTML('afterend', '<p class="field-help">Optional. Only set this if you need a hard speed floor.</p>');
+  }
+
+  select.addEventListener('change', () => {
+    input.value = select.value;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    queueMicrotask(syncSpeedSummary);
+  });
+
+  const form = input.form;
+  if (form && !form.dataset.speedSummarySync) {
+    const refresh = () => queueMicrotask(syncSpeedSummary);
+    form.addEventListener('input', refresh);
+    form.addEventListener('change', refresh);
+    form.dataset.speedSummarySync = 'true';
+  }
+
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  queueMicrotask(syncSpeedSummary);
+}
+
 function addStage(section, number) {
   if (!section) return;
   section.classList.add('stage-section');
@@ -92,6 +151,7 @@ function tuneCopy() {
   if (taskHelp) taskHelp.textContent = 'This gets the most weight.';
 
   enhancePriority();
+  enhanceSpeedFloor();
 
   const improve = document.querySelector('#improve-results');
   if (improve) {
