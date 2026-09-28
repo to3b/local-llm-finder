@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#17181a">
+  <meta name="robots" content="index,follow,max-image-preview:large">
+  <meta name="description" content="Find local LLMs that fit your GPU, Mac or computer memory. Compare estimated memory needs, task fit, context limits and rough speed before downloading a model.">
+  <link rel="canonical" href="https://local-llm-finder.to3b.chatgpt.site/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Local LLM Finder">
+  <meta property="og:title" content="Local LLM Finder — What AI models can my computer run?">
+  <meta property="og:description" content="Choose your hardware and what you want to do. Get a shortlist of local AI models worth trying.">
+  <meta property="og:url" content="https://local-llm-finder.to3b.chatgpt.site/">
+  <meta name="twitter:card" content="summary">
+  <title>Local LLM Finder — What AI models can my computer run?</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Local LLM Finder",
+    "url": "https://local-llm-finder.to3b.chatgpt.site/",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "isAccessibleForFree": true,
+    "description": "A browser-based planning tool for finding local language models that may fit a GPU, Mac or computer memory configuration."
+  }
+  </script>
+</head>
+<body>
+  <main class="app-shell">
+    <header class="app-header"><a class="brand" href="./" aria-label="Local LLM Finder home">Local LLM Finder</a></header>
+
+    <section class="hero" aria-labelledby="page-heading">
+      <p class="eyebrow">Local AI model compatibility</p>
+      <h1 id="page-heading">What LLM can your computer run?</h1>
+      <p>Choose your hardware and what you want the model to do. We’ll narrow down local models that are likely to fit and show the trade-offs.</p>
+      <p class="hero-note">No sign-in. Your choices are processed in your browser. Results are planning estimates, not measured benchmarks.</p>
+    </section>
+
+    <form id="finder-form" novalidate>
+      <section class="control-section computer-section" aria-labelledby="computer-heading">
+        <div class="section-heading"><h2 id="computer-heading">Your computer</h2></div>
+        <fieldset class="device-choices" aria-label="Choose your computer type">
+          <label><input type="radio" name="device" value="gpu"><span>Graphics card</span></label>
+          <label><input type="radio" name="device" value="mac"><span>Mac</span></label>
+          <label><input type="radio" name="device" value="unsure" checked><span>Not sure</span></label>
+        </fieldset>
+        <div class="device-input" id="gpu-fields" hidden>
+          <label for="gpu-vram">Graphics memory (VRAM)</label>
+          <div class="gpu-entry"><select id="gpu-vram" name="gpuVram"><option value="">Choose amount</option><option value="2">2 GB</option><option value="4">4 GB</option><option value="6">6 GB</option><option value="8">8 GB</option><option value="10">10 GB</option><option value="12">12 GB</option><option value="16">16 GB</option><option value="20">20 GB</option><option value="24">24 GB</option><option value="32">32 GB</option><option value="48">48 GB</option><option value="80">80 GB</option><option value="96">96 GB</option></select><button type="button" id="toggle-gpu-search" class="text-control" aria-expanded="false" aria-controls="gpu-search">Search by card name</button></div>
+          <div class="gpu-search" id="gpu-search" hidden><label for="gpu-input">Graphics card name</label><input id="gpu-input" name="gpu" list="gpu-options" autocomplete="off" placeholder="Search NVIDIA, AMD or Intel"><datalist id="gpu-options"></datalist></div>
+          <p class="field-help">Memory tells us what might fit. A card name also helps us estimate speed.</p>
+        </div>
+        <div class="device-input" id="mac-fields" hidden>
+          <label for="mac-memory">Mac memory</label>
+          <select id="mac-memory" name="macMemory"><option value="8">8 GB</option><option value="16" selected>16 GB</option><option value="24">24 GB</option><option value="32">32 GB</option><option value="36">36 GB</option><option value="48">48 GB</option><option value="64">64 GB</option><option value="96">96 GB</option><option value="128">128 GB</option><option value="192">192 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select>
+        </div>
+        <div class="device-input" id="unsure-fields">
+          <fieldset class="memory-choices"><legend>Computer memory (RAM)</legend>
+            <label><input type="radio" name="unsureMemory" value="4"><span>4 GB</span></label>
+            <label><input type="radio" name="unsureMemory" value="8"><span>8 GB</span></label>
+            <label><input type="radio" name="unsureMemory" value="16" checked><span>16 GB</span></label>
+            <label><input type="radio" name="unsureMemory" value="32"><span>32 GB</span></label>
+            <label><input type="radio" name="unsureMemory" value="64"><span>64 GB</span></label>
+            <label><input type="radio" name="unsureMemory" value="128"><span>128 GB</span></label>
+          </fieldset>
+        </div>
+      </section>
+
+      <section class="control-section task-section" aria-labelledby="task-heading">
+        <div class="section-heading"><h2 id="task-heading">What do you want help with?</h2><span>Choose any</span></div>
+        <fieldset class="task-choices" aria-label="Choose your uses">
+          <label><input type="checkbox" name="usecase" value="chat" checked><span>Chat</span></label>
+          <label><input type="checkbox" name="usecase" value="coding"><span>Write code</span></label>
+          <label><input type="checkbox" name="usecase" value="reasoning"><span>Solve problems</span></label>
+          <label><input type="checkbox" name="usecase" value="writing"><span>Creative writing</span></label>
+          <label><input type="checkbox" name="usecase" value="longContext"><span>Read long files</span></label>
+        </fieldset>
+      </section>
+
+      <section class="control-section priority-section" aria-labelledby="priority-heading">
+        <div class="section-heading"><h2 id="priority-heading">What matters more?</h2></div>
+        <div class="priority-control"><div class="priority-top"><label for="priority-input">Speed <span aria-hidden="true">↔</span> Quality</label><output id="priority-output" for="priority-input">Balanced</output></div><input id="priority-input" name="priority" type="range" min="1" max="5" step="1" value="3" aria-valuetext="Balanced"><div class="range-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div><div class="range-ends"><span>Faster</span><span>Stronger answers</span></div></div>
+      </section>
+
+      <details class="advanced" id="advanced-settings">
+        <summary><span>Advanced settings</span><span id="advanced-summary">8,000 tokens</span></summary>
+        <div class="advanced-fields">
+          <div class="field"><label for="context-input">Text limit</label><select id="context-input" name="context"><option value="4">4,000 tokens (~3,000 words)</option><option value="8" selected>8,000 tokens (~6,000 words)</option><option value="16">16,000 tokens (~12,000 words)</option><option value="32">32,000 tokens (~24,000 words)</option><option value="64">64,000 tokens (~48,000 words)</option></select><p class="field-help">Tokens are pieces of text. This limit includes your messages, pasted text, and the reply. Word counts are rough estimates for English.</p></div>
+          <div class="field" id="speed-field" hidden><label for="speed-input">Slowest speed you'd accept (tokens/second)</label><input id="speed-input" name="speed" type="number" min="1" max="500" step="1" value="15" inputmode="numeric"></div>
+          <div class="field" id="gpu-ram-field" hidden><label for="ram-input">Computer RAM (for loading models)</label><select id="ram-input" name="ram"><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32" selected>32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select></div>
+          <div class="field"><label for="vram-input">Override available memory (GB)</label><input id="vram-input" name="vram" type="number" min="2" max="512" step="0.5" inputmode="decimal" placeholder="Optional"></div>
+        </div>
+        <p class="field-help">A manual amount replaces the selected memory. Speed will show as unknown.</p>
+      </details>
+      <p id="form-error" class="form-error" role="alert" hidden></p>
+    </form>
+
+    <section class="results" id="results" aria-labelledby="results-heading">
+      <div class="results-heading"><div><h2 id="results-heading">Matches for your setup</h2><p id="results-subtitle" aria-live="polite">Example: 16 GB RAM. Choose your amount above.</p></div><span class="results-note" id="results-note">Sample estimates</span></div>
+      <div class="result-actions"><button type="button" id="share-setup" class="secondary-button">Copy link to this setup</button><span id="share-status" class="share-status" role="status" aria-live="polite"></span></div>
+      <div id="results-content"><p class="initial-state">Choose your computer and tasks to see models.</p></div>
+    </section>
+
+    <section class="content-section" aria-labelledby="how-heading">
+      <p class="eyebrow">How it works</p>
+      <h2 id="how-heading">A quick compatibility check before you download anything</h2>
+      <div class="info-grid">
+        <article><span class="step-number">01</span><h3>Estimate what fits</h3><p>We compare model weight estimates, context memory and a small safety reserve with the memory you select.</p></article>
+        <article><span class="step-number">02</span><h3>Match the job</h3><p>Models are ranked using illustrative task-fit scores for chat, coding, reasoning, writing and long-context work.</p></article>
+        <article><span class="step-number">03</span><h3>Show the trade-offs</h3><p>When you choose a known graphics card, we also show a rough bandwidth-based speed range. It is not a benchmark.</p></article>
+      </div>
+    </section>
+
+    <section class="content-section faq" aria-labelledby="faq-heading">
+      <p class="eyebrow">Common questions</p>
+      <h2 id="faq-heading">Local LLM basics</h2>
+      <details><summary>What is a local LLM?</summary><p>A local LLM is a language model that runs on your own computer instead of sending every prompt to a hosted AI service. Software such as Ollama, LM Studio and llama.cpp can run compatible model files locally.</p></details>
+      <details><summary>How much VRAM do I need for a local LLM?</summary><p>It depends on the model size, quantization and context length. Smaller quantized models can fit in a few gigabytes, while larger models may need 16, 24, 48 GB or more. Use the finder above as a starting point rather than a guarantee.</p></details>
+      <details><summary>Does more RAM or VRAM make the model smarter?</summary><p>More memory lets you load larger models or use longer context, but memory by itself does not improve a particular model. Model design, quantization, inference software and hardware all affect the experience.</p></details>
+      <details><summary>Are the speed figures benchmarks?</summary><p>No. Speed ranges in this version are planning estimates based partly on memory bandwidth. Real tokens per second can differ substantially with the inference backend, GPU support, CPU, settings, prompt length and other factors.</p></details>
+    </section>
+
+    <section class="disclaimer-panel" aria-labelledby="limitations-heading">
+      <h2 id="limitations-heading">Before relying on a result</h2>
+      <p>This is an experimental planning tool. Model memory, context, task-fit and performance figures may be incomplete or wrong, and model licences can change. Check the model publisher and your chosen runtime before making a purchase or relying on a result.</p>
+      <p><a href="./methodology.html">Methodology and data notes</a> · <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms &amp; disclaimer</a></p>
+    </section>
+
+    <footer class="site-footer">
+      <span>Local LLM Finder</span>
+      <nav aria-label="Footer"><a href="./methodology.html">Methodology</a><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a></nav>
+    </footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
