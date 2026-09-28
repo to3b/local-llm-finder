@@ -10,4 +10,15 @@ assert.equal(medium.quality.coding, MODEL_CALIBRATIONS[medium.name].quality.codi
 assert.ok(medium.quality.coding >= devstral.quality.coding, 'Sourced calibration should not rank Devstral 2 above Medium 3.5 for coding');
 assert.ok(medium.calibration?.source?.startsWith('https://'));
 
-console.log('Sourced model calibration passed.');
+for (const [name, expectedActive] of [['LFM2.5 8B-A1B', 1.5], ['LFM2 24B-A2B', 2.3]]) {
+  const model = MODELS.find(item => item.name === name);
+  assert.ok(model, `${name} should exist`);
+  assert.equal(model.activeParametersB, expectedActive);
+  assert.equal(model.calibration?.activeParametersB, expectedActive);
+  assert.ok(model.calibration?.source?.startsWith('https://'));
+  for (const quant of model.quantizations) {
+    assert.ok(Number.isFinite(quant.speedWeightsGB) && quant.speedWeightsGB > 0, `${name} ${quant.name} should have a calibrated speed-weight hint`);
+  }
+}
+
+console.log('Sourced model calibrations passed.');
