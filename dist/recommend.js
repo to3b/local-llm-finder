@@ -1,3 +1,4 @@
+import './catalog-extra.js';
 import { MODELS } from './data.js';
 
 export const USE_CASES = {
@@ -14,9 +15,12 @@ export function estimate(model, quant, hardware, contextK) {
   const hostRAMGB = +(quant.weightsGB + 4).toFixed(1);
   const reserveGB = +(Math.max(.15, Math.min(1.5, hardware.vramGB * .03))).toFixed(2);
   // Bandwidth proxy with a gentle cap: real inference depends on more than bandwidth.
-  // For manual VRAM, use a neutral 500 GB/s assumption and label that in the UI.
+  // MoE profiles can provide an active-weight hint; cap the benefit because attention,
+  // shared layers, runtime overhead and expert routing still cost time.
   const bandwidth = hardware.bandwidthGBs ?? 500;
-  const nominal = 20 * (16 / quant.weightsGB) * Math.pow(bandwidth / 850, 0.72);
+  const hintedSpeedWeights = quant.speedWeightsGB ?? quant.weightsGB;
+  const throughputWeightsGB = Math.max(quant.weightsGB * .22, hintedSpeedWeights);
+  const nominal = 20 * (16 / throughputWeightsGB) * Math.pow(bandwidth / 850, 0.72);
   const contextPenalty = Math.max(0.7, 1 - contextK / 320);
   const middle = Math.max(1, nominal * contextPenalty);
   return {
