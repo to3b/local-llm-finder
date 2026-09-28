@@ -118,5 +118,8 @@ export function recommend({
 // Load the decision-flow layer only in a browser. Keeping it out of Node makes
 // the recommendation module remain usable as a pure, testable calculation API.
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  queueMicrotask(() => import('./journeys.js'));
+  queueMicrotask(() => {
+    import('./journeys.js');
+    import('./model-links.js');
+  });
 }
