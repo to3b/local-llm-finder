@@ -124,18 +124,15 @@ function markTopChoices() {
   const rows = [...list.querySelectorAll(':scope > .model-row')];
   if (!rows.length) return;
 
-  for (const row of rows) {
-    row.classList.remove('top-choice');
-    row.querySelector('.top-choice-badge')?.remove();
-  }
-
   const topSignature = resultSignature(rows[0]);
-  const topRows = rows.filter(row => resultSignature(row) === topSignature);
-  for (const row of topRows) {
-    row.classList.add('top-choice');
-    const title = row.querySelector('.model-title');
-    if (title && !title.querySelector('.top-choice-badge')) {
-      title.insertAdjacentHTML('afterbegin', '<span class="top-choice-badge">#1 choice</span>');
+  for (const row of rows) {
+    const shouldBeTop = resultSignature(row) === topSignature;
+    row.classList.toggle('top-choice', shouldBeTop);
+    const existing = row.querySelector('.top-choice-badge');
+    if (shouldBeTop && !existing) {
+      row.querySelector('.model-title')?.insertAdjacentHTML('afterbegin', '<span class="top-choice-badge">#1 choice</span>');
+    } else if (!shouldBeTop && existing) {
+      existing.remove();
     }
   }
 }
