@@ -41,6 +41,7 @@
     </section>
 
     <form id="finder-form" novalidate>
+      <div class="tier-start" aria-label="Basic settings"><span class="tier-label">Basic</span><span>Start with the essentials</span></div>
       <section class="control-section computer-section" aria-labelledby="computer-heading">
         <div class="section-heading"><h2 id="computer-heading">Your computer</h2></div>
         <fieldset class="device-choices" aria-label="Choose your computer type">
@@ -71,14 +72,15 @@
       </section>
 
       <section class="control-section task-section" aria-labelledby="task-heading">
-        <div class="section-heading"><h2 id="task-heading">What do you want help with?</h2><span>Choose any</span></div>
-        <fieldset class="task-choices" aria-label="Choose your uses">
-          <label><input type="checkbox" name="usecase" value="chat" checked><span>Chat</span></label>
-          <label><input type="checkbox" name="usecase" value="coding"><span>Write code</span></label>
-          <label><input type="checkbox" name="usecase" value="reasoning"><span>Solve problems</span></label>
-          <label><input type="checkbox" name="usecase" value="writing"><span>Creative writing</span></label>
-          <label><input type="checkbox" name="usecase" value="longContext"><span>Read long files</span></label>
+        <div class="section-heading"><h2 id="task-heading">What do you mainly want help with?</h2><span>Pick one</span></div>
+        <fieldset class="task-choices" aria-label="Choose your main use">
+          <label><input type="radio" name="primaryUse" value="chat" checked><span>Chat</span></label>
+          <label><input type="radio" name="primaryUse" value="coding"><span>Write code</span></label>
+          <label><input type="radio" name="primaryUse" value="reasoning"><span>Solve problems</span></label>
+          <label><input type="radio" name="primaryUse" value="writing"><span>Creative writing</span></label>
+          <label><input type="radio" name="primaryUse" value="longContext"><span>Read long files</span></label>
         </fieldset>
+        <p class="field-help">This gets the most weight. Add secondary uses in Advanced if you want a more specific shortlist.</p>
       </section>
 
       <section class="control-section priority-section" aria-labelledby="priority-heading">
@@ -86,15 +88,30 @@
         <div class="priority-control"><div class="priority-top"><label for="priority-input">Speed <span aria-hidden="true">↔</span> Quality</label><output id="priority-output" for="priority-input">Balanced</output></div><input id="priority-input" name="priority" type="range" min="1" max="5" step="1" value="3" aria-valuetext="Balanced"><div class="range-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div><div class="range-ends"><span>Faster</span><span>Stronger answers</span></div></div>
       </section>
 
-      <details class="advanced" id="advanced-settings">
-        <summary><span>Advanced settings</span><span id="advanced-summary">8,000 tokens</span></summary>
+      <details class="advanced tier-panel" id="advanced-settings">
+        <summary><span><small class="tier-label">Advanced</small>Tune the recommendation</span><span id="advanced-summary">8,000 tokens</span></summary>
         <div class="advanced-fields">
-          <div class="field"><label for="context-input">Text limit</label><select id="context-input" name="context"><option value="4">4,000 tokens (~3,000 words)</option><option value="8" selected>8,000 tokens (~6,000 words)</option><option value="16">16,000 tokens (~12,000 words)</option><option value="32">32,000 tokens (~24,000 words)</option><option value="64">64,000 tokens (~48,000 words)</option></select><p class="field-help">Tokens are pieces of text. This limit includes your messages, pasted text, and the reply. Word counts are rough estimates for English.</p></div>
+          <div class="field field-wide"><span class="field-label">Also useful for</span><fieldset class="secondary-task-choices task-choices" aria-label="Choose secondary uses">
+            <label><input type="checkbox" name="secondaryUse" value="chat"><span>Chat</span></label>
+            <label><input type="checkbox" name="secondaryUse" value="coding"><span>Write code</span></label>
+            <label><input type="checkbox" name="secondaryUse" value="reasoning"><span>Solve problems</span></label>
+            <label><input type="checkbox" name="secondaryUse" value="writing"><span>Creative writing</span></label>
+            <label><input type="checkbox" name="secondaryUse" value="longContext"><span>Read long files</span></label>
+          </fieldset><p class="field-help">Secondary uses influence ranking, but your main use stays the priority.</p></div>
+          <div class="field"><label for="context-input">Text limit</label><select id="context-input" name="context"><option value="4">4,000 tokens (~3,000 words)</option><option value="8" selected>8,000 tokens (~6,000 words)</option><option value="16">16,000 tokens (~12,000 words)</option><option value="32">32,000 tokens (~24,000 words)</option><option value="64">64,000 tokens (~48,000 words)</option></select><p class="field-help">Includes your messages, pasted text and the reply. Word counts are rough estimates for English.</p></div>
           <div class="field" id="speed-field" hidden><label for="speed-input">Slowest speed you'd accept (tokens/second)</label><input id="speed-input" name="speed" type="number" min="1" max="500" step="1" value="15" inputmode="numeric"></div>
           <div class="field" id="gpu-ram-field" hidden><label for="ram-input">Computer RAM (for loading models)</label><select id="ram-input" name="ram"><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32" selected>32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select></div>
-          <div class="field"><label for="vram-input">Override available memory (GB)</label><input id="vram-input" name="vram" type="number" min="2" max="512" step="0.5" inputmode="decimal" placeholder="Optional"></div>
         </div>
-        <p class="field-help">A manual amount replaces the selected memory. Speed will show as unknown.</p>
+      </details>
+
+      <details class="advanced tier-panel power-settings" id="power-settings">
+        <summary><span><small class="tier-label">Power user</small>Fine-tune model selection</span><span id="power-summary">Automatic model choices</span></summary>
+        <div class="advanced-fields">
+          <div class="field"><label for="quant-input">Quantization</label><select id="quant-input" name="quantization"><option value="auto" selected>Automatic</option><option value="Q4_K_M">Q4_K_M — smaller</option><option value="Q5_K_M">Q5_K_M — more quality</option><option value="Q8_0">Q8_0 — largest available</option></select><p class="field-help">Automatic picks the best-fitting option for each model. A fixed choice can remove models that do not offer it here.</p></div>
+          <div class="field"><label for="max-weights-input">Maximum model file size</label><select id="max-weights-input" name="maxWeights"><option value="" selected>No limit</option><option value="2">2 GB</option><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32">32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option></select><p class="field-help">Filters by estimated quantized weight size before runtime/context overhead.</p></div>
+          <div class="field"><label for="family-input">Model family</label><select id="family-input" name="family"><option value="" selected>Any family</option></select><p class="field-help">Useful if you already prefer a model ecosystem. Leave this open for the strongest overall match.</p></div>
+          <div class="field"><label for="vram-input">Override available memory (GB)</label><input id="vram-input" name="vram" type="number" min="2" max="512" step="0.5" inputmode="decimal" placeholder="Optional"><p class="field-help">Replaces the selected memory budget. Device-specific speed becomes unknown.</p></div>
+        </div>
       </details>
       <p id="form-error" class="form-error" role="alert" hidden></p>
     </form>
