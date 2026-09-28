@@ -2,8 +2,8 @@ import assert from 'node:assert/strict';
 import { MODELS } from '../dist/data.js';
 import { recommend } from '../dist/recommend.js';
 
-const run = ({ vramGB = 12, bandwidthGBs = 504, ramGB = 32, useCases = ['coding'], preference = 3, minSpeed = 15, contextK = 8, speedKnown = true, mode = 'gpu' } = {}) =>
-  recommend({ hardware: { vramGB, bandwidthGBs, ramGB, speedKnown, mode }, useCases, preference, minSpeed, contextK });
+const run = ({ vramGB = 12, bandwidthGBs = 504, ramGB = 32, useCases = ['coding'], primaryUse = null, preference = 3, minSpeed = 15, contextK = 8, speedKnown = true, mode = 'gpu', quantization = 'auto', maxWeightsGB = null, family = null } = {}) =>
+  recommend({ hardware: { vramGB, bandwidthGBs, ramGB, speedKnown, mode }, useCases, primaryUse, preference, minSpeed, contextK, quantization, maxWeightsGB, family });
 
 assert.ok(MODELS.length >= 90);
 assert.equal(new Set(MODELS.map(model => model.id)).size, MODELS.length);
@@ -93,4 +93,25 @@ const ultraMac = run({ mode: 'mac', speedKnown: false, vramGB: 408, ramGB: 512, 
 assert.ok(ultraMac.catalog.some(x => x.model.parametersB >= 400));
 assert.ok(!workstation.catalog.some(x => x.model.parametersB >= 400));
 
-console.log(`Recommendation scenarios passed across ${MODELS.length} unique model profiles and low/high memory, tasks, priority, context and speed.`);
+const primaryCoding = run({ vramGB: 24, ramGB: 64, useCases: ['coding', 'reasoning'], primaryUse: 'coding', preference: 5 });
+const primaryReasoning = run({ vramGB: 24, ramGB: 64, useCases: ['coding', 'reasoning'], primaryUse: 'reasoning', preference: 5 });
+assert.ok(primaryCoding.matches.length > 0 && primaryReasoning.matches.length > 0);
+assert.notEqual(primaryCoding.matches[0].model.name, primaryReasoning.matches[0].model.name);
+
+const q5Only = run({ vramGB: 24, ramGB: 64, quantization: 'Q5_K_M', minSpeed: 1 });
+assert.ok(q5Only.catalog.length > 0);
+assert.ok(q5Only.catalog.every(item => item.quant.name === 'Q5_K_M'));
+
+const capped = run({ vramGB: 24, ramGB: 64, maxWeightsGB: 4, minSpeed: 1 });
+assert.ok(capped.catalog.length > 0);
+assert.ok(capped.catalog.every(item => item.quant.weightsGB <= 4));
+assert.ok(capped.excluded.filters > 0);
+
+const llamaOnly = run({ vramGB: 96, ramGB: 128, family: 'Llama', minSpeed: 1 });
+assert.ok(llamaOnly.catalog.length > 0);
+assert.ok(llamaOnly.catalog.every(item => item.model.family === 'Llama'));
+assert.ok(llamaOnly.excluded.filters > 0);
+
+assert.throws(() => run({ quantization: 'Q3' }), /valid hardware/);
+
+console.log(`Recommendation scenarios passed across ${MODELS.length} unique model profiles, tiered task weighting, filters, memory, context and speed.`);
