@@ -1,42 +1,14 @@
-// Publisher Hugging Face repositories verified for the most common recommendations.
-// Everything else falls back to Hugging Face search rather than guessing a community repo.
-const VERIFIED_AT = '2026-09-28';
-const DIRECT_REPOS = Object.freeze({
-  'Qwen3 0.6B': 'Qwen/Qwen3-0.6B',
-  'Qwen3 1.7B': 'Qwen/Qwen3-1.7B',
-  'Qwen3 4B': 'Qwen/Qwen3-4B',
-  'Qwen3 8B': 'Qwen/Qwen3-8B',
-  'Qwen3 14B': 'Qwen/Qwen3-14B',
-  'Qwen3 32B': 'Qwen/Qwen3-32B',
-  'Qwen2.5-Coder 7B': 'Qwen/Qwen2.5-Coder-7B-Instruct',
-  'Qwen2.5-Coder 14B': 'Qwen/Qwen2.5-Coder-14B-Instruct',
-  'Qwen2.5-Coder 32B': 'Qwen/Qwen2.5-Coder-32B-Instruct',
-  'Gemma 3 4B': 'google/gemma-3-4b-it',
-  'Gemma 3 12B': 'google/gemma-3-12b-it',
-  'Gemma 3 27B': 'google/gemma-3-27b-it',
-  'Llama 3.1 8B Instruct': 'meta-llama/Llama-3.1-8B-Instruct',
-  'Llama 3.3 70B Instruct': 'meta-llama/Llama-3.3-70B-Instruct',
-  'Phi-4-mini-instruct': 'microsoft/Phi-4-mini-instruct',
-  'Phi-4': 'microsoft/phi-4',
-  'Phi-4-reasoning': 'microsoft/Phi-4-reasoning',
-  'Granite 3.3 8B Instruct': 'ibm-granite/granite-3.3-8b-instruct',
-  'Mistral Small 3.2 24B Instruct': 'mistralai/Mistral-Small-3.2-24B-Instruct-2506',
-  'DeepSeek-R1-Distill-Qwen-7B': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-7B',
-  'DeepSeek-R1-Distill-Qwen-14B': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-14B',
-  'DeepSeek-R1-Distill-Qwen-32B': 'deepseek-ai/DeepSeek-R1-Distill-Qwen-32B',
-  'DeepSeek-R1-Distill-Llama-70B': 'deepseek-ai/DeepSeek-R1-Distill-Llama-70B',
-  'gpt-oss-20b': 'openai/gpt-oss-20b',
-  'Qwen3-Coder 30B-A3B Instruct': 'Qwen/Qwen3-Coder-30B-A3B-Instruct',
-  'GLM-4.5-Air': 'zai-org/GLM-4.5-Air'
-});
+import { modelSource } from './model-sources.js';
 
+// Verified publisher repositories get direct links. Everything else falls back
+// to Hugging Face search so we never guess which community upload is canonical.
 export function huggingFaceModelLink(model) {
-  const repo = DIRECT_REPOS[model?.name];
-  if (repo) return {
-    url: `https://huggingface.co/${repo}`,
-    label: 'Publisher model card',
+  const source = modelSource(model?.name);
+  if (source) return {
+    url: `https://huggingface.co/${source.repo}`,
+    label: `${source.publisher} model card`,
     direct: true,
-    verifiedAt: VERIFIED_AT
+    ...source
   };
   const name = model?.name || '';
   return {
