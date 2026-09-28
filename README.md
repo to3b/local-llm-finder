@@ -20,6 +20,16 @@ Model names and released sizes were checked against publisher sources, including
 
 Future benchmark records can replace the sample fields and add source, measured/estimated status, hardware match and confidence without changing the core form-to-results flow.
 
+## Progressive controls
+
+The finder now uses three quiet levels of control rather than exposing every setting at once:
+
+- **Basic**: hardware, one primary task and the speed-versus-quality preference. This is enough to get a useful shortlist.
+- **Advanced**: secondary tasks, context length, minimum speed (when a known GPU is selected) and host RAM. The primary task receives 65% of the task-fit weighting; selected secondary tasks share the remaining 35%.
+- **Power user**: fixed quantization, maximum estimated model-weight file size, model-family filtering and a manual memory-budget override. These are opt-in filters and keep their automatic/no-limit defaults unless changed.
+
+Shared setup links store the primary task separately while remaining compatible with older links that stored all tasks together.
+
 ## Traffic-test iteration (28 September 2026)
 
 This version adds a lightweight public-launch layer without adding analytics or advertising:
