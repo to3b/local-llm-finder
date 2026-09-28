@@ -1,4 +1,4 @@
-import { GPUs } from './data.js';
+import { GPUs, MODELS } from './data.js';
 import { recommend } from './recommend.js';
 
 const form = document.querySelector('#finder-form');
@@ -14,27 +14,50 @@ const vramInput = document.querySelector('#vram-input');
 const priorityInput = document.querySelector('#priority-input');
 const priorityOutput = document.querySelector('#priority-output');
 const advanced = document.querySelector('#advanced-settings');
+const power = document.querySelector('#power-settings');
 const shareButton = document.querySelector('#share-setup');
 const shareStatus = document.querySelector('#share-status');
+const familyInput = document.querySelector('#family-input');
 const gpuLabel = gpu => `${gpu.name} — ${gpu.vramGB} GB`;
 const fmt = value => Number.isInteger(value) ? String(value) : value.toFixed(1);
 const parameterText = value => value < 1 ? `${Math.round(value * 1000)} million` : `${fmt(value)} billion`;
 const taskNames = { chat: 'chatting', coding: 'coding', reasoning: 'solving problems', writing: 'creative writing', longContext: 'reading long files' };
+const taskShortNames = { chat: 'chat', coding: 'coding', reasoning: 'reasoning', writing: 'writing', longContext: 'long files' };
 const preferenceNames = ['Fastest', 'Faster', 'Balanced', 'Stronger', 'Strongest'];
+const listFormatter = new Intl.ListFormat('en', { style: 'long', type: 'conjunction' });
 let touched = false;
 let lastMode;
 let catalogLimit = 8;
 
-const options = GPUs.map(gpu => { const option = document.createElement('option'); option.value = gpuLabel(gpu); return option; });
-document.querySelector('#gpu-options').replaceChildren(...options);
+const gpuOptions = GPUs.map(gpu => { const option = document.createElement('option'); option.value = gpuLabel(gpu); return option; });
+document.querySelector('#gpu-options').replaceChildren(...gpuOptions);
+
+const familyOptions = [...new Set(MODELS.map(model => model.family))]
+  .sort((a, b) => a.localeCompare(b))
+  .map(family => { const option = document.createElement('option'); option.value = family; option.textContent = family; return option; });
+familyInput.append(...familyOptions);
+
 const selectedGPU = () => GPUs.find(item => gpuLabel(item).toLowerCase() === gpuInput.value.trim().toLowerCase());
-const tasks = () => [...form.querySelectorAll('input[name="usecase"]:checked')].map(input => input.value);
-const taskText = keys => keys.map(key => taskNames[key]).join(', ');
+const primaryTask = () => form.elements.primaryUse.value;
+const secondaryTasks = () => [...form.querySelectorAll('input[name="secondaryUse"]:checked')].map(input => input.value);
+const tasks = () => [primaryTask(), ...secondaryTasks().filter(key => key !== primaryTask())];
+const taskText = keys => listFormatter.format(keys.map(key => taskNames[key]));
+const taskShortText = keys => listFormatter.format(keys.map(key => taskShortNames[key]));
 const setValueIfValid = (control, value) => {
   if (!control || value == null) return;
   const allowed = control.tagName === 'SELECT' ? [...control.options].some(option => option.value === value) : true;
   if (allowed) control.value = value;
 };
+
+function syncSecondaryTasks() {
+  const primary = primaryTask();
+  for (const input of form.querySelectorAll('input[name="secondaryUse"]')) {
+    const same = input.value === primary;
+    if (same) input.checked = false;
+    input.disabled = same;
+    input.closest('label')?.classList.toggle('choice-disabled', same);
+  }
+}
 
 function applyUrlState() {
   const params = new URLSearchParams(window.location.hash.slice(1));
@@ -62,13 +85,22 @@ function applyUrlState() {
     if (memory) memory.checked = true;
   }
 
-  const requestedTasks = (params.get('u') || '').split(',').filter(key => taskNames[key]);
-  if (requestedTasks.length) {
-    for (const input of form.querySelectorAll('input[name="usecase"]')) input.checked = requestedTasks.includes(input.value);
+  // New links store the primary task separately. Older links stored all tasks in `u`.
+  const oldTasks = (params.get('u') || '').split(',').filter(key => taskNames[key]);
+  const requestedPrimary = params.get('t') && taskNames[params.get('t')] ? params.get('t') : oldTasks[0];
+  if (requestedPrimary) {
+    const primary = [...form.querySelectorAll('input[name="primaryUse"]')].find(input => input.value === requestedPrimary);
+    if (primary) primary.checked = true;
   }
+  const requestedSecondary = params.has('t') ? oldTasks : oldTasks.slice(1);
+  for (const input of form.querySelectorAll('input[name="secondaryUse"]')) input.checked = requestedSecondary.includes(input.value);
+
   setValueIfValid(priorityInput, params.get('p'));
   setValueIfValid(form.elements.context, params.get('c'));
   setValueIfValid(form.elements.ram, params.get('r'));
+  setValueIfValid(form.elements.quantization, params.get('q'));
+  setValueIfValid(form.elements.maxWeights, params.get('z'));
+  setValueIfValid(form.elements.family, params.get('f'));
   if (params.get('s')) form.elements.speed.value = params.get('s');
   if (params.get('o')) vramInput.value = params.get('o');
   touched = true;
@@ -89,9 +121,13 @@ function setupUrl() {
     if (gpu && !vramInput.value.trim()) params.set('s', form.elements.speed.value);
   } else if (mode === 'mac') params.set('m', form.elements.macMemory.value);
   else params.set('m', form.elements.unsureMemory.value);
-  params.set('u', tasks().join(','));
+  params.set('t', primaryTask());
+  if (secondaryTasks().length) params.set('u', secondaryTasks().join(','));
   params.set('p', priorityInput.value);
   params.set('c', form.elements.context.value);
+  if (form.elements.quantization.value !== 'auto') params.set('q', form.elements.quantization.value);
+  if (form.elements.maxWeights.value) params.set('z', form.elements.maxWeights.value);
+  if (form.elements.family.value) params.set('f', form.elements.family.value);
   if (vramInput.value.trim()) params.set('o', vramInput.value.trim());
   url.hash = params.toString();
   return url.toString();
@@ -119,6 +155,7 @@ async function copySetupLink() {
 }
 
 applyUrlState();
+syncSecondaryTasks();
 lastMode = form.elements.device.value;
 
 function updateDevice() {
@@ -135,55 +172,80 @@ function updateDevice() {
   document.querySelector('#speed-field').hidden = !(mode === 'gpu' && selectedGPU() && !vramInput.value.trim());
   lastMode = mode;
 }
+
 function updatePriority() {
   const label = preferenceNames[Number(priorityInput.value) - 1];
   priorityOutput.textContent = label;
   priorityInput.setAttribute('aria-valuetext', label);
 }
-function updateAdvanced() {
+
+function updateTierSummaries() {
   const speedKnown = form.elements.device.value === 'gpu' && !!selectedGPU() && !vramInput.value.trim();
-  const speedText = speedKnown ? ` · ${form.elements.speed.value || '—'} tokens/second minimum` : '';
-  document.querySelector('#advanced-summary').textContent = `${(Number(form.elements.context.value) * 1000).toLocaleString('en-US')} tokens${speedText}${vramInput.value.trim() ? ` · ${vramInput.value.trim()} GB override` : ''}`;
+  const extras = secondaryTasks().length;
+  const advancedParts = [`${(Number(form.elements.context.value) * 1000).toLocaleString('en-US')} tokens`];
+  if (extras) advancedParts.push(`${extras} secondary ${extras === 1 ? 'use' : 'uses'}`);
+  if (speedKnown) advancedParts.push(`${form.elements.speed.value || '—'} tok/s min`);
+  document.querySelector('#advanced-summary').textContent = advancedParts.join(' · ');
+
+  const powerParts = [];
+  if (form.elements.quantization.value === 'auto') powerParts.push('Auto quantization');
+  else powerParts.push(form.elements.quantization.value);
+  if (form.elements.family.value) powerParts.push(form.elements.family.value);
+  if (form.elements.maxWeights.value) powerParts.push(`≤ ${form.elements.maxWeights.value} GB file`);
+  if (vramInput.value.trim()) powerParts.push(`${vramInput.value.trim()} GB override`);
+  document.querySelector('#power-summary').textContent = powerParts.join(' · ');
 }
-function row(item, hardware, useCases, slower = false, extra = false) {
+
+function row(item, hardware, primaryUse, useCases, slower = false, extra = false) {
   const { model, quant, quality, requiredGB, speedLow, speedHigh, ramAdvisory } = item;
   const unknown = !hardware.speedKnown;
   const fit = hardware.mode === 'gpu' ? `Fits in ${fmt(hardware.vramGB)} GB of graphics memory.` : hardware.mode === 'mac' ? `Likely fits in your Mac's available memory.` : `Likely fits with ${fmt(hardware.ramGB)} GB of RAM.`;
-  const why = `${quality >= 87 ? 'Strong' : 'Good'} for ${taskText(useCases)}. ${fit}`;
+  const secondary = useCases.filter(key => key !== primaryUse);
+  const useText = secondary.length ? `${taskNames[primaryUse]} first, with ${taskText(secondary)} as secondary needs` : taskNames[primaryUse];
+  const why = `${quality >= 87 ? 'Strong' : 'Good'} overall fit for ${useText}. ${fit}`;
   const speed = unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s`;
   const speedText = unknown ? 'We do not have a speed estimate for this setup.' : slower ? `Estimated speed is below your ${fmt(hardware.minSpeed)} tokens/second minimum.` : `Estimated speed meets your ${fmt(hardware.minSpeed)} tokens/second minimum.`;
   return `<details class="model-row ${extra ? 'hidden-row' : ''}">
     <summary><span class="model-title"><strong>${model.name}</strong><small>${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : unknown ? ' · Speed not estimated' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span><span class="metric speed"><span>Speed</span><strong>${speed}</strong></span><span class="chevron" aria-hidden="true"></span></summary>
-    <div class="model-details"><p>${why} ${speedText}</p><div class="detail-grid"><div><span class="detail-label">Task fit</span><strong>${quality}/100</strong></div><div><span class="detail-label">Text limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div><div><span class="detail-label">Memory</span><strong>${fmt(requiredGB)} GB estimated</strong></div><div><span class="detail-label">Speed</span><strong>${unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s estimated`}</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}</div>
+    <div class="model-details"><p>${why} ${speedText}</p><div class="detail-grid"><div><span class="detail-label">Weighted task fit</span><strong>${quality}/100</strong></div><div><span class="detail-label">Text limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div><div><span class="detail-label">Memory</span><strong>${fmt(requiredGB)} GB estimated</strong></div><div><span class="detail-label">Speed</span><strong>${unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s estimated`}</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}</div>
   </details>`;
 }
+
 function resources() {
   return `<section class="resources" aria-label="Other ways to use AI"><h3>Need a lighter option?</h3><p>Small local models can help with simpler tasks. Online services offer another option, but your prompts are sent to the provider.</p><div class="resource-grid"><div class="resource-card"><strong>Try a small local model</strong><p>Qwen3 0.6B is a starting point for modest hardware. It may be less capable, but your prompts stay on your device when you run it locally.</p><a href="https://ollama.com/library/qwen3:0.6b" target="_blank" rel="noopener noreferrer">Open in Ollama ↗</a><a href="https://huggingface.co/Qwen/Qwen3-0.6B" target="_blank" rel="noopener noreferrer">Read model card ↗</a></div><div class="resource-card"><strong>Use an online model</strong><p>ChatGPT and Claude run online. Check their privacy settings before sharing personal or sensitive information.</p><a href="https://chatgpt.com/" target="_blank" rel="noopener noreferrer">ChatGPT ↗</a><a href="https://claude.ai/" target="_blank" rel="noopener noreferrer">Claude ↗</a></div></div><p class="privacy-note">Privacy settings vary by service: <a href="https://help.openai.com/en/articles/7730893-data-controls-in-chatgpt" target="_blank" rel="noopener noreferrer">ChatGPT data controls</a> · <a href="https://privacy.claude.com/en/articles/10023580-is-my-data-used-for-model-training" target="_blank" rel="noopener noreferrer">Claude training policy</a>.</p></section>`;
 }
-function render(data, hardware, useCases, contextK) {
+
+function render(data, hardware, primaryUse, useCases, contextK, settings) {
   resultsNote.textContent = `${data.considered} models · sample estimates`;
+  const secondary = useCases.filter(key => key !== primaryUse);
+  const taskSummary = secondary.length ? `${taskShortNames[primaryUse]} + ${taskShortText(secondary)}` : taskShortNames[primaryUse];
   if (!touched) subtitle.textContent = 'Example: 16 GB RAM. Choose your amount above.';
-  else if (hardware.mode === 'gpu') subtitle.textContent = `${hardware.deviceName} · ${taskText(useCases)}`;
-  else if (hardware.mode === 'mac') subtitle.textContent = `Mac with ${fmt(hardware.ramGB)} GB memory · ${taskText(useCases)}`;
-  else subtitle.textContent = `${fmt(hardware.ramGB)} GB RAM · ${taskText(useCases)}`;
+  else if (hardware.mode === 'gpu') subtitle.textContent = `${hardware.deviceName} · ${taskSummary}`;
+  else if (hardware.mode === 'mac') subtitle.textContent = `Mac with ${fmt(hardware.ramGB)} GB memory · ${taskSummary}`;
+  else subtitle.textContent = `${fmt(hardware.ramGB)} GB RAM · ${taskSummary}`;
 
   let html = '';
   if (data.matches.length) {
-    html += `<div class="match-list">${data.matches.map((item, i) => row(item, hardware, useCases, false, i >= 3)).join('')}</div>`;
+    html += `<div class="match-list">${data.matches.map((item, i) => row(item, hardware, primaryUse, useCases, false, i >= 3)).join('')}</div>`;
     if (data.matches.length > 3) html += `<button type="button" class="show-more" aria-expanded="false">Show ${data.matches.length - 3} more matches</button>`;
   } else {
     html += data.slower.length
-      ? `<div class="empty-state"><strong>Nothing meets your speed minimum.</strong><p>Models that fit your memory but fall below that speed are listed below.</p></div>`
-      : `<div class="empty-state"><strong>No model fits these choices.</strong><p>Try a shorter text limit or more available memory.</p></div>`;
+      ? `<div class="empty-state"><strong>Nothing meets your speed minimum.</strong><p>Models that fit your other choices but fall below that speed are listed below.</p></div>`
+      : `<div class="empty-state"><strong>No model fits these choices.</strong><p>Try a shorter text limit, a looser Power User filter, or more available memory.</p></div>`;
   }
-  if (data.catalog.length) html += `<details class="catalog"><summary>Browse all ${data.catalog.length} models that fit</summary><div class="catalog-body"><p>Includes the shortlist and models below your speed target.</p><label for="catalog-search">Search by model or family</label><input id="catalog-search" type="search" autocomplete="off" placeholder="e.g. Qwen, Gemma, Mistral"><p class="catalog-count" id="catalog-count" aria-live="polite"></p><div class="catalog-list">${data.catalog.map(item => row(item, hardware, useCases, item.meetsSpeed === false)).join('')}</div><p class="catalog-no-results" hidden>No model in this list matches your search.</p><button type="button" class="browse-more" hidden>Show more models</button></div></details>`;
-  if (data.slower.length) html += `<section class="secondary"><h3 class="secondary-heading">Fits, but below your speed target</h3>${data.slower.map(item => row(item, hardware, useCases, true)).join('')}</section>`;
+  if (data.catalog.length) html += `<details class="catalog"><summary>Browse all ${data.catalog.length} models that fit</summary><div class="catalog-body"><p>Includes the shortlist and models below your speed target.</p><label for="catalog-search">Search by model or family</label><input id="catalog-search" type="search" autocomplete="off" placeholder="e.g. Qwen, Gemma, Mistral"><p class="catalog-count" id="catalog-count" aria-live="polite"></p><div class="catalog-list">${data.catalog.map(item => row(item, hardware, primaryUse, useCases, item.meetsSpeed === false)).join('')}</div><p class="catalog-no-results" hidden>No model in this list matches your search.</p><button type="button" class="browse-more" hidden>Show more models</button></div></details>`;
+  if (data.slower.length) html += `<section class="secondary"><h3 class="secondary-heading">Fits, but below your speed target</h3>${data.slower.map(item => row(item, hardware, primaryUse, useCases, true)).join('')}</section>`;
   if (hardware.vramGB <= 6 || !data.matches.length) html += resources();
-  html += `<details class="method-note"><summary>How did we pick these?</summary><p>We estimate how much memory each model needs, including room for the text limit you chose, and leave some memory free. We rank those that fit by your tasks and speed or quality preference. Stronger task fits get priority when they meet your speed minimum. ${data.excluded.memory} models did not fit the estimated memory; ${data.excluded.context} did not support ${(contextK * 1000).toLocaleString('en-US')} tokens. Computer RAM is a guide for loading, not a strict cutoff. <strong>Memory, speed, and task scores are sample estimates, not measured benchmarks.</strong> A graphics card name helps us estimate speed, which also varies with software and settings.</p></details>`;
+
+  const filterText = data.excluded.filters
+    ? ` ${data.excluded.filters} models were removed by your quantization, family or file-size filters.`
+    : '';
+  html += `<details class="method-note"><summary>How did we pick these?</summary><p>We estimate how much memory each model needs, including room for the text limit you chose, and leave some memory free. Your main use receives most of the task weighting; secondary uses share the rest. We then apply your speed-versus-quality preference and any Power User filters. ${data.excluded.memory} models did not fit the estimated memory; ${data.excluded.context} did not support ${(contextK * 1000).toLocaleString('en-US')} tokens.${filterText} Computer RAM is a guide for loading, not a strict cutoff. <strong>Memory, speed, and task scores are sample estimates, not measured benchmarks.</strong> A graphics card name helps us estimate speed, which also varies with software and settings.</p></details>`;
   results.innerHTML = html;
   catalogLimit = 8;
   filterCatalog();
 }
+
 function filterCatalog() {
   const search = results.querySelector('#catalog-search');
   if (!search) return;
@@ -202,17 +264,25 @@ function filterCatalog() {
   more.hidden = matches <= catalogLimit;
   more.textContent = `Show ${Math.min(8, matches - catalogLimit)} more models`;
 }
+
 function empty(message) {
   results.innerHTML = `<div class="empty-state"><strong>${message}</strong><p>Change your choice above to see models.</p></div>`;
   subtitle.textContent = 'Matches update as you choose.';
 }
+
 function update() {
-  updateDevice(); updatePriority(); updateAdvanced(); error.hidden = true;
+  syncSecondaryTasks();
+  updateDevice();
+  updatePriority();
+  updateTierSummaries();
+  error.hidden = true;
+
   const mode = form.elements.device.value;
+  const primaryUse = primaryTask();
   const useCases = tasks();
-  if (!useCases.length) { empty('Pick at least one thing you want to do.'); return; }
   const custom = vramInput.value.trim() !== '';
   let vramGB, ramGB, bandwidthGBs, deviceName, speedKnown = false;
+
   if (mode === 'gpu') {
     const gpu = selectedGPU();
     const chosenMemory = Number(gpuVram.value);
@@ -228,19 +298,46 @@ function update() {
     vramGB = custom ? Number(vramInput.value) : Math.max(2, Math.floor(ramGB * .8 - 1));
     bandwidthGBs = undefined;
   }
+
   const minSpeed = speedKnown ? Number(form.elements.speed.value) : 15;
   const contextK = Number(form.elements.context.value);
+  const quantization = form.elements.quantization.value;
+  const maxWeightsGB = form.elements.maxWeights.value ? Number(form.elements.maxWeights.value) : null;
+  const family = form.elements.family.value || null;
+
   if (!Number.isFinite(vramGB) || vramGB < 2 || vramGB > 512) {
-    error.textContent = 'Enter memory between 2 and 512 GB.'; error.hidden = false; advanced.open = true; empty('Check the memory amount.'); return;
+    error.textContent = 'Enter memory between 2 and 512 GB.';
+    error.hidden = false;
+    power.open = true;
+    empty('Check the memory amount.');
+    return;
   }
   if (!Number.isFinite(minSpeed) || minSpeed < 1 || minSpeed > 500) {
-    error.textContent = 'Enter a speed between 1 and 500 tokens/sec.'; error.hidden = false; advanced.open = true; empty('Check the speed target.'); return;
+    error.textContent = 'Enter a speed between 1 and 500 tokens/sec.';
+    error.hidden = false;
+    advanced.open = true;
+    empty('Check the speed target.');
+    return;
   }
+
   try {
     const hardware = { mode, vramGB, ramGB, bandwidthGBs, deviceName, speedKnown, minSpeed };
-    render(recommend({ hardware, useCases, preference: Number(priorityInput.value), minSpeed, contextK }), hardware, useCases, contextK);
-  } catch (err) { empty(err.message); }
+    const settings = { quantization, maxWeightsGB, family };
+    const data = recommend({
+      hardware,
+      useCases,
+      primaryUse,
+      preference: Number(priorityInput.value),
+      minSpeed,
+      contextK,
+      ...settings
+    });
+    render(data, hardware, primaryUse, useCases, contextK, settings);
+  } catch (err) {
+    empty(err.message);
+  }
 }
+
 gpuSearchToggle.addEventListener('click', () => {
   gpuSearch.hidden = !gpuSearch.hidden;
   gpuSearchToggle.setAttribute('aria-expanded', String(!gpuSearch.hidden));
@@ -248,15 +345,18 @@ gpuSearchToggle.addEventListener('click', () => {
   if (gpuSearch.hidden) { gpuInput.value = ''; touched = true; update(); }
   if (!gpuSearch.hidden) gpuInput.focus();
 });
+
 gpuInput.addEventListener('input', () => {
   const gpu = selectedGPU();
   if (gpu) gpuVram.value = String(gpu.vramGB);
 });
+
 gpuVram.addEventListener('input', () => { gpuInput.value = ''; });
 form.addEventListener('input', () => { touched = true; update(); });
 form.addEventListener('change', () => { touched = true; update(); });
 form.addEventListener('submit', event => event.preventDefault());
 shareButton.addEventListener('click', copySetupLink);
+
 results.addEventListener('click', event => {
   if (event.target.closest('.browse-more')) { catalogLimit += 8; filterCatalog(); return; }
   const button = event.target.closest('.show-more');
@@ -266,9 +366,11 @@ results.addEventListener('click', event => {
   button.setAttribute('aria-expanded', String(expanded));
   button.textContent = expanded ? 'Show fewer matches' : `Show ${list.querySelectorAll('.hidden-row').length} more matches`;
 });
+
 results.addEventListener('input', event => {
   if (event.target.id !== 'catalog-search') return;
   catalogLimit = 8;
   filterCatalog();
 });
+
 update();
