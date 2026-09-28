@@ -112,49 +112,9 @@ function tuneCopy() {
   return true;
 }
 
-function resultSignature(row) {
-  const fit = row.querySelector('.detail-grid > div:first-child strong')?.textContent?.trim() || '';
-  const speed = row.querySelector('.metric.speed strong')?.textContent?.trim() || '';
-  return `${fit}|${speed}`;
-}
-
-function markTopChoices() {
-  const list = document.querySelector('#results-content .match-list');
-  if (!list) return;
-  const rows = [...list.querySelectorAll(':scope > .model-row')];
-  if (!rows.length) return;
-
-  const topSignature = resultSignature(rows[0]);
-  for (const row of rows) {
-    const shouldBeTop = resultSignature(row) === topSignature;
-    row.classList.toggle('top-choice', shouldBeTop);
-    const existing = row.querySelector('.top-choice-badge');
-    if (shouldBeTop && !existing) {
-      row.querySelector('.model-title')?.insertAdjacentHTML('afterbegin', '<span class="top-choice-badge">#1 choice</span>');
-    } else if (!shouldBeTop && existing) {
-      existing.remove();
-    }
-  }
-}
-
-function startResultObserver() {
-  const target = document.querySelector('#results-content');
-  if (!target || target.dataset.topChoiceObserver) return;
-  target.dataset.topChoiceObserver = 'true';
-  const observer = new MutationObserver(markTopChoices);
-  observer.observe(target, { childList: true, subtree: true });
-  markTopChoices();
-}
-
-function initialise() {
-  if (!tuneCopy()) return false;
-  startResultObserver();
-  return true;
-}
-
-if (!initialise()) {
+if (!tuneCopy()) {
   const observer = new MutationObserver(() => {
-    if (initialise()) observer.disconnect();
+    if (tuneCopy()) observer.disconnect();
   });
   observer.observe(document.body, { childList: true, subtree: true });
 }
