@@ -1,0 +1,43 @@
+name: Data correction or missing model/GPU
+description: Report incorrect catalogue data, a bad recommendation, or missing hardware/model support.
+title: "[Data] "
+labels: []
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Model data
+        - GPU data
+        - Recommendation/ranking
+        - Speed or memory estimate
+        - Missing model
+        - Missing GPU
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: item
+    attributes:
+      label: Model or hardware
+      placeholder: e.g. Qwen3 14B or RTX 4070 SUPER
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What looks wrong?
+      description: Include the setup you selected and what result you expected if relevant.
+    validations:
+      required: true
+  - type: input
+    id: source
+    attributes:
+      label: Source
+      description: Publisher/model card/specification or benchmark link if you have one.
+      placeholder: https://...
+  - type: textarea
+    id: notes
+    attributes:
+      label: Extra context
