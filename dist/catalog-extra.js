@@ -14,7 +14,19 @@ function appendUnique(target, additions) {
   }
 }
 
+function disambiguateGpuNames() {
+  const counts = new Map();
+  for (const gpu of GPUs) {
+    const key = gpu.name.toLowerCase();
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+  for (const gpu of GPUs) {
+    if ((counts.get(gpu.name.toLowerCase()) || 0) > 1) gpu.name = `${gpu.name} ${gpu.vramGB}GB`;
+  }
+}
+
 appendUnique(GPUs, EXTRA_GPUS);
 appendUnique(MODELS, EXTRA_MODELS);
+disambiguateGpuNames();
 GPUs.sort((a, b) => a.name.localeCompare(b.name));
 MODELS.sort((a, b) => a.name.localeCompare(b.name));
