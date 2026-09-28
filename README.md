@@ -20,7 +20,7 @@ The current catalogue contains **135+ GPU profiles** across NVIDIA, AMD and Inte
 
 GPU coverage includes consumer, professional and selected datacenter cards. Laptop GPUs and integrated GPUs are intentionally not treated as equivalent to desktop cards yet because power limits and shared-memory behaviour need a different estimator.
 
-Model identities include families such as Qwen, Gemma, Llama, Mistral, DeepSeek, Phi, Granite, OLMo, GPT-OSS, GLM and other mainstream/niche releases. `dist/model-links.js` contains a curated set of verified publisher Hugging Face repositories for common recommendations; models without a verified direct mapping fall back to Hugging Face search rather than guessing a community repository.
+Model identities include families such as Qwen, Gemma, Llama, Mistral, DeepSeek, Phi, Granite, OLMo, GPT-OSS, GLM and other mainstream/niche releases. `dist/model-sources.js` stores curated publisher provenance for common recommendations; `dist/model-links.js` uses those records for direct publisher Hugging Face links and falls back to Hugging Face search rather than guessing a community repository.
 
 ## Important data limitation
 
@@ -55,7 +55,7 @@ No backend, account or API key is required.
 npm test
 ```
 
-The suite covers catalogue integrity, recommendation scenarios, ranking regressions, presentation/tie rules and curated model links. GitHub Actions also runs the suite on pushes to `main` and pull requests.
+The suite covers catalogue integrity, recommendation scenarios, ranking regressions, presentation/tie rules, curated model sources, a V1 hardware/workload matrix and release metadata. GitHub Actions runs the suite on pushes to `main` and pull requests.
 
 ## Project structure
 
@@ -66,12 +66,13 @@ The suite covers catalogue integrity, recommendation scenarios, ranking regressi
 - `dist/app.js` — main finder form and results rendering.
 - `dist/journeys.js` — Find / Improve / Upgrade decision flows.
 - `dist/presentation.js` — qualitative fit labels and joint-top-choice rules.
+- `dist/model-sources.js` — curated publisher provenance and selected sourced metadata.
 - `dist/model-links.js` — Hugging Face publisher/search links.
 - `dist/styles.css`, `dist/tiers.css`, `dist/palette.css` — interface styling.
 - `dist/privacy.html`, `dist/terms.html`, `dist/methodology.html` — trust/legal pages.
 
 ## V1 data direction
 
-The next major accuracy improvement is provenance rather than more UI controls: expand sourced model records with publisher URL, release date, architecture, total/active parameters, context, licence, runtime support, measurement source/date and confidence. Prototype ranking inputs can then be replaced progressively without changing the core interface.
+The next major accuracy improvement is deeper provenance rather than more UI controls: expand sourced model records with release date, architecture, total/active parameters, native context, licence, runtime support, measurement source/date and confidence. Prototype ranking inputs can then be replaced progressively without changing the core interface.
 
 Corrections and missing hardware/models can be reported through GitHub Issues.
