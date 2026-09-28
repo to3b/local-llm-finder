@@ -1,14 +1,65 @@
+const PRIORITY_LABELS = ['Fastest', 'Faster', 'Balanced', 'Stronger', 'Strongest'];
+
+function enhancePriority() {
+  const input = document.querySelector('#priority-input');
+  const control = input?.closest('.priority-control');
+  if (!input || !control) return;
+
+  if (!control.querySelector('.priority-steps')) {
+    const steps = document.createElement('div');
+    steps.className = 'priority-steps';
+    steps.setAttribute('role', 'group');
+    steps.setAttribute('aria-label', 'Speed versus quality priority');
+    steps.innerHTML = PRIORITY_LABELS.map((label, index) =>
+      `<button type="button" class="priority-step" data-priority="${index + 1}" aria-pressed="false">${label}</button>`
+    ).join('');
+    control.append(steps);
+
+    steps.addEventListener('click', event => {
+      const button = event.target.closest('[data-priority]');
+      if (!button) return;
+      input.value = button.dataset.priority;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+  }
+
+  control.classList.add('priority-enhanced');
+  const sync = () => {
+    const value = Number(input.value);
+    for (const button of control.querySelectorAll('[data-priority]')) {
+      button.setAttribute('aria-pressed', String(Number(button.dataset.priority) === value));
+    }
+  };
+  if (!input.dataset.prioritySync) {
+    input.addEventListener('input', sync);
+    input.addEventListener('change', sync);
+    input.dataset.prioritySync = 'true';
+  }
+  sync();
+}
+
+function addStage(section, number) {
+  if (!section) return;
+  section.classList.add('stage-section');
+  const heading = section.querySelector('.section-heading');
+  if (heading && !heading.querySelector('.stage-index')) {
+    heading.insertAdjacentHTML('afterbegin', `<span class="stage-index" aria-hidden="true">${number}</span>`);
+  }
+}
+
 function tuneCopy() {
   const hero = document.querySelector('.hero');
   const nav = document.querySelector('.journey-nav');
   if (!hero || !nav) return false;
 
+  document.querySelector('.app-header')?.remove();
+  hero.querySelector('.eyebrow')?.remove();
+  hero.querySelector('.hero-note')?.remove();
+
   const heading = hero.querySelector('#page-heading');
-  const heroBody = hero.querySelector(':scope > p:not(.eyebrow):not(.hero-note)');
-  const heroNote = hero.querySelector('.hero-note');
+  const heroBody = hero.querySelector(':scope > p');
   if (heading) heading.textContent = 'Find the right local LLM';
-  if (heroBody) heroBody.textContent = 'Find, compare and upgrade local models for your hardware.';
-  if (heroNote) heroNote.textContent = 'Runs in your browser. Estimates, not benchmarks.';
+  if (heroBody) heroBody.textContent = 'Match models to your hardware and workload.';
 
   const labels = {
     find: ['Find', 'Pick a model'],
@@ -30,12 +81,17 @@ function tuneCopy() {
 
   const hardwareHeading = document.querySelector('#computer-heading');
   if (hardwareHeading) hardwareHeading.textContent = 'Hardware';
+  addStage(document.querySelector('.computer-section'), 1);
+  addStage(document.querySelector('.task-section'), 2);
+  addStage(document.querySelector('.priority-section'), 3);
 
   const gpuHelp = document.querySelector('#gpu-fields .field-help');
   if (gpuHelp) gpuHelp.textContent = 'VRAM affects fit. Card model improves speed estimates.';
 
   const taskHelp = document.querySelector('.task-section > .field-help');
   if (taskHelp) taskHelp.textContent = 'This gets the most weight.';
+
+  enhancePriority();
 
   const improve = document.querySelector('#improve-results');
   if (improve) {
@@ -56,9 +112,52 @@ function tuneCopy() {
   return true;
 }
 
-if (!tuneCopy()) {
+function resultSignature(row) {
+  const fit = row.querySelector('.detail-grid > div:first-child strong')?.textContent?.trim() || '';
+  const speed = row.querySelector('.metric.speed strong')?.textContent?.trim() || '';
+  return `${fit}|${speed}`;
+}
+
+function markTopChoices() {
+  const list = document.querySelector('#results-content .match-list');
+  if (!list) return;
+  const rows = [...list.querySelectorAll(':scope > .model-row')];
+  if (!rows.length) return;
+
+  for (const row of rows) {
+    row.classList.remove('top-choice');
+    row.querySelector('.top-choice-badge')?.remove();
+  }
+
+  const topSignature = resultSignature(rows[0]);
+  const topRows = rows.filter(row => resultSignature(row) === topSignature);
+  for (const row of topRows) {
+    row.classList.add('top-choice');
+    const title = row.querySelector('.model-title');
+    if (title && !title.querySelector('.top-choice-badge')) {
+      title.insertAdjacentHTML('afterbegin', '<span class="top-choice-badge">#1 choice</span>');
+    }
+  }
+}
+
+function startResultObserver() {
+  const target = document.querySelector('#results-content');
+  if (!target || target.dataset.topChoiceObserver) return;
+  target.dataset.topChoiceObserver = 'true';
+  const observer = new MutationObserver(markTopChoices);
+  observer.observe(target, { childList: true, subtree: true });
+  markTopChoices();
+}
+
+function initialise() {
+  if (!tuneCopy()) return false;
+  startResultObserver();
+  return true;
+}
+
+if (!initialise()) {
   const observer = new MutationObserver(() => {
-    if (tuneCopy()) observer.disconnect();
+    if (initialise()) observer.disconnect();
   });
   observer.observe(document.body, { childList: true, subtree: true });
 }
