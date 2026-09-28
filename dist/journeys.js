@@ -1,5 +1,6 @@
 import { GPUs, MODELS } from './data.js';
 import { recommend } from './recommend.js';
+import { fitLabel, fitDelta } from './presentation.js';
 
 const form = document.querySelector('#finder-form');
 const findView = document.querySelector('#results');
@@ -10,24 +11,24 @@ const fmt = n => Number.isInteger(n) ? String(n) : Number(n).toFixed(1);
 const signed = n => `${n > 0 ? '+' : ''}${Number.isInteger(n) ? n : n.toFixed(1)}`;
 const gpuLabel = gpu => `${gpu.name} — ${gpu.vramGB} GB`;
 
-hero.querySelector('#page-heading').textContent = 'Find the local LLM setup that makes sense for you';
+hero.querySelector('#page-heading').textContent = 'Find the right local LLM';
 const heroCopy = hero.querySelectorAll(':scope > p');
-if (heroCopy[1]) heroCopy[1].textContent = 'Find a model that fits, check whether your current model is still a good choice, or see what a memory upgrade would actually change.';
+if (heroCopy[1]) heroCopy[1].textContent = 'Match models to your hardware and workload.';
 document.title = 'Local LLM Finder — Find, improve or upgrade your local AI setup';
 
 hero.insertAdjacentHTML('afterend', `<nav class="journey-nav" aria-label="Choose what you want to do"><div class="journey-options">
-  <button type="button" class="journey-option" data-journey="find" aria-pressed="true"><span>Find</span><small>Choose a model</small></button>
-  <button type="button" class="journey-option" data-journey="improve" aria-pressed="false"><span>Improve</span><small>Check your current model</small></button>
-  <button type="button" class="journey-option" data-journey="upgrade" aria-pressed="false"><span>Upgrade</span><small>See what more memory changes</small></button>
-</div><p class="journey-help">The hardware and workload settings below are shared across all three views.</p></nav>`);
+  <button type="button" class="journey-option" data-journey="find" aria-pressed="true"><span>Find</span><small>Pick a model</small></button>
+  <button type="button" class="journey-option" data-journey="improve" aria-pressed="false"><span>Improve</span><small>Compare your model</small></button>
+  <button type="button" class="journey-option" data-journey="upgrade" aria-pressed="false"><span>Upgrade</span><small>See what memory unlocks</small></button>
+</div></nav>`);
 
 findView.insertAdjacentHTML('afterend', `<section class="results journey-results" id="improve-results" hidden>
-  <div class="results-heading"><div><h2>Is your current model still a good fit?</h2><p>Compare what you run now with alternatives for the same hardware and workload.</p></div><span class="results-note">Prototype comparison</span></div>
+  <div class="results-heading"><div><h2>Compare your current model</h2><p>See alternatives for the same setup.</p></div><span class="results-note">Estimate</span></div>
   <div class="current-model-control"><div class="field"><label for="current-model">Current model</label><input id="current-model" list="current-model-list" autocomplete="off" placeholder="Start typing a model name"><datalist id="current-model-list"></datalist></div><div class="field"><label for="current-quant">Current quantization</label><select id="current-quant"><option value="auto">Automatic / not sure</option><option>Q4_K_M</option><option>Q5_K_M</option><option>Q8_0</option></select></div></div>
-  <div id="improve-content" class="journey-content"><p class="initial-state">Choose the model you already run to compare it.</p></div>
+  <div id="improve-content" class="journey-content"><p class="initial-state">Choose the model you already run.</p></div>
 </section>
 <section class="results journey-results" id="upgrade-results" hidden>
-  <div class="results-heading"><div><h2>When would more memory actually change your options?</h2><p>Find the next memory tiers where the recommendation meaningfully improves for the same workload.</p></div><span class="results-note">Capacity-only simulation</span></div>
+  <div class="results-heading"><div><h2>What does more memory unlock?</h2><p>See the next memory tiers that change your options.</p></div><span class="results-note">Capacity estimate</span></div>
   <div id="upgrade-content" class="journey-content"></div>
 </section>`);
 
@@ -74,7 +75,7 @@ function state() {
     hardware: { mode, vramGB, ramGB, bandwidthGBs, speedKnown, deviceName },
     useCases: [primaryUse, ...secondary], primaryUse,
     preference: Number(form.elements.priority?.value || 3),
-    minSpeed: speedKnown ? Number(form.elements.speed?.value || 15) : 15,
+    minSpeed: speedKnown ? Number(form.elements.speed?.value || 10) : 10,
     contextK: Number(form.elements.context?.value || 8),
     quantization: form.elements.quantization?.value || 'auto',
     maxWeightsGB: maxRaw ? Number(maxRaw) : null,
@@ -93,14 +94,14 @@ function run(s, changes = {}, models = MODELS) {
 
 function card(item, hardware, label) {
   const speed = hardware.speedKnown ? `${item.speedLow}–${item.speedHigh} tok/s` : 'Not estimated';
-  return `<article class="decision-card"><span class="decision-label">${label}</span><h3>${item.model.name}</h3><p>${item.quant.name} · ${fmt(item.requiredGB)} GB estimated memory</p><dl><div><dt>Task fit</dt><dd>${item.quality}/100</dd></div><div><dt>Speed</dt><dd>${speed}</dd></div><div><dt>Context</dt><dd>${item.model.contextK}K</dd></div></dl></article>`;
+  return `<article class="decision-card"><span class="decision-label">${label}</span><h3>${item.model.name}</h3><p>${item.quant.name} · ${fmt(item.requiredGB)} GB estimated memory</p><dl><div><dt>Task fit</dt><dd>${fitLabel(item.quality)}</dd></div><div><dt>Speed</dt><dd>${speed}</dd></div><div><dt>Context</dt><dd>${item.model.contextK}K</dd></div></dl></article>`;
 }
 
 function renderImprove() {
   const s = state();
   if (s.error) return void (improveContent.innerHTML = `<div class="empty-state"><strong>Finish the hardware setup first.</strong><p>${s.error}</p></div>`);
   const model = MODELS.find(x => x.name.toLowerCase() === currentInput.value.trim().toLowerCase());
-  if (!model) return void (improveContent.innerHTML = '<p class="initial-state">Choose the model you already run. The comparison will use the same settings shown above.</p>');
+  if (!model) return void (improveContent.innerHTML = '<p class="initial-state">Choose the model you already run.</p>');
   let currentResult, alternatives;
   try {
     currentResult = run(s, { quantization: currentQuant.value, maxWeightsGB: null, family: null }, [model]);
@@ -110,7 +111,7 @@ function renderImprove() {
   }
   const current = currentResult.catalog[0];
   if (!current) {
-    const reason = currentResult.excluded.context ? 'The selected text limit exceeds this model profile.' : currentResult.excluded.memory ? 'It does not fit the current memory budget at this quantization.' : 'That quantization is not available in the prototype catalogue.';
+    const reason = currentResult.excluded.context ? 'The selected text limit exceeds this model profile.' : currentResult.excluded.memory ? 'It does not fit the current memory budget at this quantization.' : 'That quantization is not available in the catalogue.';
     return void (improveContent.innerHTML = `<div class="decision-summary decision-warning"><span class="decision-kicker">Current setup</span><h3>${model.name} is a difficult fit under these settings</h3><p>${reason}</p></div>`);
   }
   const alternative = alternatives.matches.find(x => x.model.id !== model.id) || alternatives.catalog.find(x => x.model.id !== model.id);
@@ -123,9 +124,9 @@ function renderImprove() {
   if (rank >= .04 && q >= 3 && (speed === null || speed >= -Math.max(2, current.speedLow * .3))) {
     title = 'There may be a worthwhile model switch'; text = `${alternative.model.name} is a stronger fit for the workload you selected without an extreme estimated speed penalty.`; tone = ' decision-positive';
   } else if (rank <= .02 && q <= 2) {
-    title = 'Your current model remains competitive'; text = 'The best alternative does not create a large enough improvement to make switching look compelling in the current scoring model.';
+    title = 'Your current model remains competitive'; text = 'The best alternative does not create a large enough improvement to make switching compelling in the current ranking model.';
   }
-  improveContent.innerHTML = `<div class="decision-summary${tone}"><span class="decision-kicker">Model refresh check</span><h3>${title}</h3><p>${text}</p><div class="delta-strip"><span>Task fit <strong>${signed(q)}</strong></span><span>Memory <strong>${signed(mem)} GB</strong></span><span>Speed <strong>${speed === null ? 'not comparable' : `${signed(speed)} tok/s`}</strong></span></div></div><div class="decision-grid">${card(current, s.hardware, 'Current model')}${card(alternative, s.hardware, 'Best alternative')}</div><p class="journey-caveat">Prototype only: these comparisons still use sample capability and performance data rather than benchmark-grade evidence.</p>`;
+  improveContent.innerHTML = `<div class="decision-summary${tone}"><span class="decision-kicker">Model refresh check</span><h3>${title}</h3><p>${text}</p><div class="delta-strip"><span>Task fit <strong>${fitDelta(q)}</strong></span><span>Memory <strong>${signed(mem)} GB</strong></span><span>Speed <strong>${speed === null ? 'not comparable' : `${signed(speed)} tok/s`}</strong></span></div></div><div class="decision-grid">${card(current, s.hardware, 'Current model')}${card(alternative, s.hardware, 'Best alternative')}</div><p class="journey-caveat">Capability and performance comparisons are planning estimates, not benchmark-grade measurements.</p>`;
 }
 
 function budgets(s) {
@@ -164,7 +165,7 @@ function renderUpgrade() {
   const unit = s.customMemory ? 'GB available memory' : s.mode === 'gpu' ? 'GB VRAM' : s.mode === 'mac' ? 'GB unified memory' : 'GB RAM';
   const start = `${fmt(s.customMemory || s.mode === 'gpu' ? s.hardware.vramGB : s.hardware.ramGB)} ${unit}`;
   if (!milestones.length) return void (upgradeContent.innerHTML = `<div class="decision-summary"><span class="decision-kicker">Capacity check</span><h3>More memory does not quickly change the top recommendation</h3><p>Starting from ${start}, the tested higher-memory tiers did not create a meaningfully stronger top pick under these preferences.</p></div>${card(base, baseHardware, 'Current capacity pick')}<p class="journey-caveat">This isolates memory capacity only; it does not compare compute, bandwidth, price or measured speed.</p>`);
-  upgradeContent.innerHTML = `<div class="decision-summary decision-positive"><span class="decision-kicker">Next meaningful capacity steps</span><h3>Your current top capacity pick is ${base.model.name}</h3><p>Starting from ${start}, these are the first higher-memory tiers where the recommendation changes enough to matter in the prototype scoring.</p></div><div class="upgrade-list">${milestones.map(({amount,candidate,previous}) => `<article class="upgrade-milestone"><span class="decision-label">At ${amount} ${unit}</span><h3>${candidate.model.name}</h3><p>${previous.model.id === candidate.model.id ? `${previous.quant.name} → ${candidate.quant.name}` : `${previous.model.name} → ${candidate.model.name}`}</p><div class="milestone-meta"><span>Task fit <strong>+${candidate.quality - previous.quality}</strong></span><span>${candidate.quant.name}</span><span>${fmt(candidate.requiredGB)} GB estimated</span></div></article>`).join('')}</div><p class="journey-caveat">Capacity-only simulation: this does not say buying the hardware is worthwhile. Compute, bandwidth, price and real benchmarks still matter.</p>`;
+  upgradeContent.innerHTML = `<div class="decision-summary decision-positive"><span class="decision-kicker">Next meaningful capacity steps</span><h3>Your current top capacity pick is ${base.model.name}</h3><p>Starting from ${start}, these are the first higher-memory tiers where the recommendation changes enough to matter.</p></div><div class="upgrade-list">${milestones.map(({amount,candidate,previous}) => `<article class="upgrade-milestone"><span class="decision-label">At ${amount} ${unit}</span><h3>${candidate.model.name}</h3><p>${previous.model.id === candidate.model.id ? `${previous.quant.name} → ${candidate.quant.name}` : `${previous.model.name} → ${candidate.model.name}`}</p><div class="milestone-meta"><span>Task fit <strong>${fitDelta(candidate.quality - previous.quality)}</strong></span><span>${candidate.quant.name}</span><span>${fmt(candidate.requiredGB)} GB estimated</span></div></article>`).join('')}</div><p class="journey-caveat">Capacity-only simulation: compute, bandwidth, price and real benchmarks still matter.</p>`;
 }
 
 function refresh() { if (active === 'improve') renderImprove(); else if (active === 'upgrade') renderUpgrade(); }
