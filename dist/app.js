@@ -1,5 +1,6 @@
 import { GPUs, MODELS } from './data.js';
 import { recommend } from './recommend.js';
+import { fitLabel, isTopTie } from './presentation.js';
 
 const form = document.querySelector('#finder-form');
 const results = document.querySelector('#results-content');
@@ -85,7 +86,6 @@ function applyUrlState() {
     if (memory) memory.checked = true;
   }
 
-  // New links store the primary task separately. Older links stored all tasks in `u`.
   const oldTasks = (params.get('u') || '').split(',').filter(key => taskNames[key]);
   const requestedPrimary = params.get('t') && taskNames[params.get('t')] ? params.get('t') : oldTasks[0];
   if (requestedPrimary) {
@@ -196,18 +196,18 @@ function updateTierSummaries() {
   document.querySelector('#power-summary').textContent = powerParts.join(' · ');
 }
 
-function row(item, hardware, primaryUse, useCases, slower = false, extra = false) {
+function row(item, hardware, primaryUse, useCases, slower = false, extra = false, isTop = false) {
   const { model, quant, quality, requiredGB, speedLow, speedHigh, ramAdvisory } = item;
   const unknown = !hardware.speedKnown;
   const fit = hardware.mode === 'gpu' ? `Fits in ${fmt(hardware.vramGB)} GB of graphics memory.` : hardware.mode === 'mac' ? `Likely fits in your Mac's available memory.` : `Likely fits with ${fmt(hardware.ramGB)} GB of RAM.`;
   const secondary = useCases.filter(key => key !== primaryUse);
   const useText = secondary.length ? `${taskNames[primaryUse]} first, with ${taskText(secondary)} as secondary needs` : taskNames[primaryUse];
-  const why = `${quality >= 87 ? 'Strong' : 'Good'} overall fit for ${useText}. ${fit}`;
+  const why = `${fitLabel(quality)} fit for ${useText}. ${fit}`;
   const speed = unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s`;
-  const speedText = unknown ? 'We do not have a speed estimate for this setup.' : slower ? `Estimated speed is below your ${fmt(hardware.minSpeed)} tokens/second minimum.` : `Estimated speed meets your ${fmt(hardware.minSpeed)} tokens/second minimum.`;
-  return `<details class="model-row ${extra ? 'hidden-row' : ''}">
-    <summary><span class="model-title"><strong>${model.name}</strong><small>${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : unknown ? ' · Speed not estimated' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span><span class="metric speed"><span>Speed</span><strong>${speed}</strong></span><span class="chevron" aria-hidden="true"></span></summary>
-    <div class="model-details"><p>${why} ${speedText}</p><div class="detail-grid"><div><span class="detail-label">Weighted task fit</span><strong>${quality}/100</strong></div><div><span class="detail-label">Text limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div><div><span class="detail-label">Memory</span><strong>${fmt(requiredGB)} GB estimated</strong></div><div><span class="detail-label">Speed</span><strong>${unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s estimated`}</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}</div>
+  const speedText = unknown ? 'Exact-device speed is not estimated for this setup.' : slower ? `Estimated speed is below your ${fmt(hardware.minSpeed)} tokens/second minimum.` : `Estimated speed meets your ${fmt(hardware.minSpeed)} tokens/second minimum.`;
+  return `<details class="model-row ${extra ? 'hidden-row ' : ''}${isTop ? 'top-choice' : ''}">
+    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">#1 choice</span>' : ''}<strong>${model.name}</strong><small>${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : unknown ? ' · Speed not estimated' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span><span class="metric speed"><span>Speed</span><strong>${speed}</strong></span><span class="chevron" aria-hidden="true"></span></summary>
+    <div class="model-details"><p>${why} ${speedText}</p><div class="detail-grid"><div><span class="detail-label">Task fit</span><strong>${fitLabel(quality)}</strong></div><div><span class="detail-label">Text limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div><div><span class="detail-label">Memory</span><strong>${fmt(requiredGB)} GB estimated</strong></div><div><span class="detail-label">Speed</span><strong>${unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s estimated`}</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}</div>
   </details>`;
 }
 
@@ -216,7 +216,7 @@ function resources() {
 }
 
 function render(data, hardware, primaryUse, useCases, contextK, settings) {
-  resultsNote.textContent = `${data.considered} models · sample estimates`;
+  resultsNote.textContent = `${data.considered} models · catalogue Sep 2026`;
   const secondary = useCases.filter(key => key !== primaryUse);
   const taskSummary = secondary.length ? `${taskShortNames[primaryUse]} + ${taskShortText(secondary)}` : taskShortNames[primaryUse];
   if (!touched) subtitle.textContent = 'Example: 16 GB RAM. Choose your amount above.';
@@ -226,7 +226,8 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
 
   let html = '';
   if (data.matches.length) {
-    html += `<div class="match-list">${data.matches.map((item, i) => row(item, hardware, primaryUse, useCases, false, i >= 3)).join('')}</div>`;
+    const top = data.matches[0];
+    html += `<div class="match-list">${data.matches.map((item, i) => row(item, hardware, primaryUse, useCases, false, i >= 3, isTopTie(item, top))).join('')}</div>`;
     if (data.matches.length > 3) html += `<button type="button" class="show-more" aria-expanded="false">Show ${data.matches.length - 3} more matches</button>`;
   } else {
     html += data.slower.length
@@ -240,7 +241,7 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
   const filterText = data.excluded.filters
     ? ` ${data.excluded.filters} models were removed by your quantization, family or file-size filters.`
     : '';
-  html += `<details class="method-note"><summary>How did we pick these?</summary><p>We estimate how much memory each model needs, including room for the text limit you chose, and leave some memory free. Your main use receives most of the task weighting; secondary uses share the rest. We then apply your speed-versus-quality preference and any Power User filters. ${data.excluded.memory} models did not fit the estimated memory; ${data.excluded.context} did not support ${(contextK * 1000).toLocaleString('en-US')} tokens.${filterText} Computer RAM is a guide for loading, not a strict cutoff. <strong>Memory, speed, and task scores are sample estimates, not measured benchmarks.</strong> A graphics card name helps us estimate speed, which also varies with software and settings.</p></details>`;
+  html += `<details class="method-note"><summary>How did we pick these?</summary><p>We estimate model memory, context overhead and headroom, then rank viable models for your main use and speed-versus-quality preference. ${data.excluded.memory} models did not fit the estimated memory; ${data.excluded.context} did not support ${(contextK * 1000).toLocaleString('en-US')} tokens.${filterText} Task fit is shown as a broad label because the underlying capability scores are still prototype ranking inputs, not benchmark-grade measurements. Speed is also an estimate unless stated otherwise.</p></details>`;
   results.innerHTML = html;
   catalogLimit = 8;
   filterCatalog();
@@ -294,7 +295,6 @@ function update() {
     deviceName = speedKnown ? gpu.name : `${fmt(vramGB)} GB graphics memory`;
   } else {
     ramGB = Number(mode === 'mac' ? form.elements.macMemory.value : form.elements.unsureMemory.value);
-    // Shared-memory planning budget: reserve approximately 20% plus 1 GB.
     vramGB = custom ? Number(vramInput.value) : Math.max(2, Math.floor(ramGB * .8 - 1));
     bandwidthGBs = undefined;
   }
