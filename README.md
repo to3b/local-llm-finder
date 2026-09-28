@@ -4,7 +4,7 @@ A static, browser-only tool for finding, comparing and planning local LLM setups
 
 **Current release: 1.0.0 — 28 September 2026**
 
-Public site: https://to3b.github.io/local-llm-finder/
+Public site: https://localllmfinder.com/
 
 Release notes: `CHANGELOG.md`  
 V1 recommendation validation: `docs/v1-spotcheck.md`
@@ -65,7 +65,8 @@ The suite covers catalogue integrity, recommendation scenarios, ranking regressi
 
 ## Project structure
 
-- `index.html` — clean GitHub Pages entry point. It loads assets from `dist/` while keeping the public URL at the repository root.
+- `index.html` — public entry point. It loads assets from `dist/` while keeping the public URL at the domain root.
+- `CNAME` — GitHub Pages custom-domain declaration for `localllmfinder.com`.
 - `dist/data.js` — base GPU/model catalogue.
 - `dist/gpu-extra.js`, `dist/model-extra.js`, `dist/catalog-extra.js` — expanded catalogue data.
 - `dist/model-calibrations.js` — small evidence-backed corrections to older prototype inputs.
