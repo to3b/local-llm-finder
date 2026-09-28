@@ -12,32 +12,13 @@ const gpu = (query, vramGB = null) => {
 
 const gpuScenario = (name, query, task, preference = 3, vramGB = null) => {
   const card = gpu(query, vramGB);
-  return {
-    name,
-    hardware: {
-      mode: 'gpu',
-      vramGB: card.vramGB,
-      ramGB: card.vramGB >= 24 ? 64 : 32,
-      bandwidthGBs: card.bandwidthGBs,
-      speedKnown: true,
-      deviceName: card.name
-    },
-    task,
-    preference
-  };
+  return { name, hardware: { mode: 'gpu', vramGB: card.vramGB, ramGB: card.vramGB >= 24 ? 64 : 32, bandwidthGBs: card.bandwidthGBs, speedKnown: true, deviceName: card.name }, task, preference };
 };
 
 const macScenario = (ramGB, task, preference = 3) => ({
   name: `Mac ${ramGB} GB · ${task} · ${preference === 1 ? 'fastest' : preference === 5 ? 'strongest' : 'balanced'}`,
-  hardware: {
-    mode: 'mac',
-    ramGB,
-    vramGB: Math.max(2, Math.floor(ramGB * 0.8 - 1)),
-    speedKnown: false,
-    deviceName: `Mac with ${ramGB} GB memory`
-  },
-  task,
-  preference
+  hardware: { mode: 'mac', ramGB, vramGB: Math.max(2, Math.floor(ramGB * 0.8 - 1)), speedKnown: false, deviceName: `Mac with ${ramGB} GB memory` },
+  task, preference
 });
 
 const scenarios = [
@@ -63,29 +44,36 @@ const scenarios = [
   macScenario(512, 'coding', 3)
 ];
 
+const run = (scenario, minSpeed) => recommend({
+  hardware: scenario.hardware,
+  useCases: [scenario.task], primaryUse: scenario.task,
+  preference: scenario.preference, minSpeed, contextK: 8,
+  quantization: 'auto', maxWeightsGB: null, family: null
+});
+
 const lines = [];
+let floorChanges = 0;
 for (const scenario of scenarios) {
-  const result = recommend({
-    hardware: scenario.hardware,
-    useCases: [scenario.task],
-    primaryUse: scenario.task,
-    preference: scenario.preference,
-    minSpeed: scenario.hardware.speedKnown ? 15 : 15,
-    contextK: 8,
-    quantization: 'auto',
-    maxWeightsGB: null,
-    family: null
-  });
+  const result = run(scenario, scenario.hardware.speedKnown ? 15 : 1);
   assert.ok(result.matches.length || result.catalog.length, `${scenario.name} should have at least one viable model`);
   const top = (result.matches.length ? result.matches : result.catalog).slice(0, 3);
-  for (const item of top) {
-    assert.ok(item.requiredGB + item.reserveGB <= scenario.hardware.vramGB + 1e-9, `${scenario.name}: ${item.model.name} must fit memory`);
-  }
+  for (const item of top) assert.ok(item.requiredGB + item.reserveGB <= scenario.hardware.vramGB + 1e-9, `${scenario.name}: ${item.model.name} must fit memory`);
+
   lines.push(`\n${scenario.name}`);
   top.forEach((item, i) => {
     const speed = scenario.hardware.speedKnown ? `${item.speedLow}–${item.speedHigh} tok/s` : 'speed unknown';
     lines.push(`  ${i + 1}. ${item.model.name} · ${item.quant.name} · ${item.requiredGB.toFixed(1)} GB · ${speed} · fit ${item.quality.toFixed(1)} · rank ${item.rank.toFixed(3)}`);
   });
+
+  if (scenario.hardware.speedKnown) {
+    const unrestricted = run(scenario, 1);
+    const normalTop = top[0];
+    const unrestrictedTop = (unrestricted.matches.length ? unrestricted.matches : unrestricted.catalog)[0];
+    if (normalTop?.model.id !== unrestrictedTop?.model.id || normalTop?.quant.name !== unrestrictedTop?.quant.name) {
+      floorChanges += 1;
+      lines.push(`  ⚠ hidden 15 tok/s floor changes #1: ${normalTop.model.name} → ${unrestrictedTop.model.name} ${unrestrictedTop.quant.name} (${unrestrictedTop.speedLow}–${unrestrictedTop.speedHigh} tok/s)`);
+    }
+  }
 }
 
-console.log(`V1 real-world spot-check report (${scenarios.length} scenarios):${lines.join('\n')}`);
+console.log(`V1 real-world spot-check report (${scenarios.length} scenarios; hidden speed floor changes ${floorChanges}):${lines.join('\n')}`);
