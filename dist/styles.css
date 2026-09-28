@@ -229,3 +229,43 @@ input::placeholder { color: var(--quiet); }
   .site-footer { align-items: flex-start; flex-direction: column; }
   .legal-shell { padding: 0 16px 42px; }
 }
+
+/* Quiet ambient colour: a slow, low-contrast aurora behind the interface. */
+body {
+  position: relative;
+  isolation: isolate;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  inset: -18vh -14vw;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 22%, rgba(76, 118, 160, .13), transparent 32%),
+    radial-gradient(circle at 82% 18%, rgba(112, 82, 138, .11), transparent 30%),
+    radial-gradient(circle at 66% 78%, rgba(62, 126, 116, .09), transparent 34%);
+  filter: blur(28px) saturate(.85);
+  opacity: .68;
+  transform: translate3d(0, 0, 0) scale(1.02);
+  animation: ambient-drift 24s ease-in-out infinite alternate;
+}
+body::after {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(23, 24, 26, .10), rgba(23, 24, 26, .78) 70%, var(--page));
+}
+
+@keyframes ambient-drift {
+  0% { transform: translate3d(-1.2%, -.8%, 0) scale(1.02); }
+  50% { transform: translate3d(1.4%, .9%, 0) scale(1.055); }
+  100% { transform: translate3d(-.4%, 1.5%, 0) scale(1.035); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
