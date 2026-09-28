@@ -68,6 +68,12 @@ export function recommend({
     throw new Error('Choose valid hardware and requirements to find matches.');
   }
 
+  // A value of 1 means the user has not requested a hard speed floor. Speed still
+  // contributes to ranking against a neutral 15 tok/s reference, but slower models
+  // are not silently excluded. Any value above 1 is an explicit minimum.
+  const hasSpeedFloor = minSpeed > 1;
+  const speedReference = hasSpeedFloor ? minSpeed : 15;
+
   const excluded = { context: 0, memory: 0, filters: 0 };
   const eligible = [];
   for (const model of models) {
@@ -85,7 +91,7 @@ export function recommend({
       const metrics = estimate(model, quant, hardware, contextK);
       const quality = Math.min(100, Math.round(taskQuality(model, useCases, primaryUse) + (quant.qualityBonus ?? 0)));
       // Preference changes the tradeoff, but a model that is already comfortably
-      // above the requested speed should not keep winning purely for being smaller.
+      // above the speed reference should not keep winning purely for being smaller.
       // When device speed is unknown, balanced/quality modes stay neutral instead
       // of treating model size as if it were a benchmark.
       const qualityWeight = [.24, .46, .70, .82, .92][preference - 1];
@@ -97,7 +103,7 @@ export function recommend({
           : preference === 2 ? .74 + .26 * sizeProxy
           : .82;
       } else {
-        const ratio = metrics.speedLow / Math.max(1, minSpeed);
+        const ratio = metrics.speedLow / Math.max(1, speedReference);
         if (ratio < 1) speedUtility = Math.max(0, .72 * ratio);
         else {
           const headroom = Math.min(1, Math.log2(ratio) / 2.5);
@@ -105,8 +111,9 @@ export function recommend({
         }
       }
       const rank = qualityWeight * quality / 100 + (1 - qualityWeight) * speedUtility;
-      // VRAM alone tells us fit, not device-specific speed.
-      const meetsSpeed = speedKnown ? metrics.speedLow >= minSpeed : null;
+      // VRAM alone tells us fit, not device-specific speed. No explicit floor means
+      // known-GPU models remain eligible and speed only affects their ranking.
+      const meetsSpeed = speedKnown ? (hasSpeedFloor ? metrics.speedLow >= minSpeed : true) : null;
       return { model, quant, quality, ...metrics, rank, meetsSpeed };
     }).filter(option => option.fits);
 
@@ -120,7 +127,7 @@ export function recommend({
   const qualifying = eligible.filter(item => item.meetsSpeed !== false);
   const bestTaskFit = Math.max(0, ...qualifying.map(item => item.quality));
   // Avoid filling the shortlist with tiny but weak models when stronger ones
-  // already meet the user's speed target. Speed-first allows a wider range.
+  // already offer a reasonable speed/quality balance. Speed-first allows a wider range.
   const taskFloor = bestTaskFit - (preference <= 2 ? 28 : preference === 3 ? 18 : 14);
   return {
     matches: qualifying.filter(item => item.quality >= taskFloor).slice(0, 5),
@@ -136,10 +143,9 @@ export function recommend({
 // Load the decision-flow layer only in a browser. Keeping it out of Node makes
 // the recommendation module remain usable as a pure, testable calculation API.
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
-  // Keep the hidden default speed threshold permissive. Users who care about a
-  // harder floor can raise it in Advanced settings. Shared links still override it.
+  // Do not impose a hidden speed floor. Advanced users can opt into one.
   const speedInput = document.querySelector('#speed-input');
-  if (speedInput?.value === '15') speedInput.value = '10';
+  if (speedInput && (speedInput.value === '15' || speedInput.value === '10')) speedInput.value = '1';
 
   if (!document.querySelector('link[data-local-llm-palette]')) {
     const palette = document.createElement('link');
