@@ -80,12 +80,26 @@ export function recommend({
     const options = quantCandidates.map(quant => {
       const metrics = estimate(model, quant, hardware, contextK);
       const quality = Math.min(100, Math.round(taskQuality(model, useCases, primaryUse) + (quant.qualityBonus ?? 0)));
-      // Preference changes the tradeoff, but fit and task quality remain visible.
-      const qualityWeight = [.16, .34, .53, .70, .88][preference - 1];
+      // Preference changes the tradeoff, but a model that is already comfortably
+      // above the requested speed should not keep winning purely for being smaller.
+      // When device speed is unknown, balanced/quality modes stay neutral instead
+      // of treating model size as if it were a benchmark.
+      const qualityWeight = [.24, .46, .70, .82, .92][preference - 1];
       const speedKnown = hardware.speedKnown !== false && hardware.mode !== 'unsure';
-      const speedUtility = !speedKnown
-        ? .75 + .25 * Math.min(1, 6 / quant.weightsGB) // gentle size proxy; speed unknown
-        : Math.min(1, Math.log2(1 + Math.max(1, metrics.speedLow)) / Math.log2(81));
+      let speedUtility;
+      if (!speedKnown) {
+        const sizeProxy = Math.min(1, 7 / quant.weightsGB);
+        speedUtility = preference === 1 ? .62 + .38 * sizeProxy
+          : preference === 2 ? .74 + .26 * sizeProxy
+          : .82;
+      } else {
+        const ratio = metrics.speedLow / Math.max(1, minSpeed);
+        if (ratio < 1) speedUtility = Math.max(0, .72 * ratio);
+        else {
+          const headroom = Math.min(1, Math.log2(ratio) / 2.5);
+          speedUtility = .72 + .28 * headroom;
+        }
+      }
       const rank = qualityWeight * quality / 100 + (1 - qualityWeight) * speedUtility;
       // VRAM alone tells us fit, not device-specific speed.
       const meetsSpeed = speedKnown ? metrics.speedLow >= minSpeed : null;
@@ -98,7 +112,7 @@ export function recommend({
     eligible.push(options[0]);
   }
 
-  eligible.sort((a, b) => b.rank - a.rank || b.quality - a.quality);
+  eligible.sort((a, b) => b.rank - a.rank || b.quality - a.quality || a.quant.weightsGB - b.quant.weightsGB);
   const qualifying = eligible.filter(item => item.meetsSpeed !== false);
   const bestTaskFit = Math.max(0, ...qualifying.map(item => item.quality));
   // Avoid filling the shortlist with tiny but weak models when stronger ones
