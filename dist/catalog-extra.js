@@ -2,6 +2,7 @@
 import { GPUs, MODELS } from './data.js';
 import { EXTRA_GPUS } from './gpu-extra.js';
 import { EXTRA_MODELS } from './model-extra.js';
+import { applyModelCalibrations } from './model-calibrations.js';
 
 function appendUnique(target, additions) {
   const ids = new Set(target.map(item => item.id));
@@ -27,6 +28,7 @@ function disambiguateGpuNames() {
 
 appendUnique(GPUs, EXTRA_GPUS);
 appendUnique(MODELS, EXTRA_MODELS);
+applyModelCalibrations(MODELS);
 disambiguateGpuNames();
 GPUs.sort((a, b) => a.name.localeCompare(b.name));
 MODELS.sort((a, b) => a.name.localeCompare(b.name));
