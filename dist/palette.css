@@ -2,8 +2,7 @@
    green #61BB46, yellow #FDB827, orange #F5821F, red #E03A3E, purple #963D97.
    Keep the interface neutral; colour is ambient rather than decorative. */
 
-/* The base stylesheet gives body an opaque background. Keep the colour layer
-   inside the visible stacking context instead of placing it behind that paint. */
+/* Keep the colour layer in the visible stacking context. */
 body::before,
 body::after {
   z-index: 0;
@@ -38,15 +37,51 @@ body::after {
 }
 
 .journey-option[aria-pressed="true"] {
-  border-color: #686b70;
+  border-color: #66646a;
   background:
     linear-gradient(115deg,
-      rgba(97,187,70,.065),
-      rgba(253,184,39,.038) 28%,
-      rgba(245,130,31,.044) 48%,
-      rgba(224,58,62,.040) 69%,
-      rgba(150,61,151,.070)),
-    rgba(39,39,45,.90);
+      rgba(97,187,70,.055),
+      rgba(253,184,39,.032) 28%,
+      rgba(245,130,31,.038) 48%,
+      rgba(224,58,62,.035) 69%,
+      rgba(150,61,151,.060)),
+    rgba(38,38,43,.94);
+}
+
+/* Selected controls should read as active, not as primary white buttons. */
+.device-choices input:checked + span,
+.task-choices input:checked + span,
+.memory-choices input:checked + span {
+  color: #f0efea;
+  border-color: #706d70;
+  background:
+    linear-gradient(120deg, rgba(253,184,39,.055), rgba(245,130,31,.045) 48%, rgba(150,61,151,.055)),
+    #343438;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.025);
+  font-weight: 570;
+}
+
+.priority-top output {
+  color: #d2d1cc;
+  font-weight: 550;
+}
+
+.priority-control input[type=range]::-webkit-slider-thumb {
+  width: 15px;
+  height: 15px;
+  border-width: 2px;
+  background: #d8d6cf;
+}
+
+.priority-control input[type=range]::-moz-range-thumb {
+  width: 11px;
+  height: 11px;
+  border-width: 2px;
+  background: #d8d6cf;
+}
+
+.tier-start {
+  gap: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
