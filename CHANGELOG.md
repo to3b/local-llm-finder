@@ -2,7 +2,7 @@
 
 ## 1.0.0 — 28 September 2026
 
-First public release candidate of Local LLM Finder.
+First public release of Local LLM Finder.
 
 ### Finder
 
@@ -37,7 +37,7 @@ First public release candidate of Local LLM Finder.
 - 165-scenario hardware/workload/preference QA matrix.
 - 20 representative real-world recommendation spot checks retained as regression coverage.
 - Privacy, terms/disclaimer and methodology pages.
-- Clean GitHub Pages canonical URL, sitemap and robots metadata.
+- Custom production domain at `https://localllmfinder.com/` with canonical, sitemap and robots metadata.
 - GitHub issue path for data corrections and missing hardware/models.
 
 ### Known V1 limitations
