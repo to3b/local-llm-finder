@@ -132,6 +132,19 @@ export function recommend({
 // Load the decision-flow layer only in a browser. Keeping it out of Node makes
 // the recommendation module remain usable as a pure, testable calculation API.
 if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  // Keep the hidden default speed threshold permissive. Users who care about a
+  // harder floor can raise it in Advanced settings. Shared links still override it.
+  const speedInput = document.querySelector('#speed-input');
+  if (speedInput?.value === '15') speedInput.value = '10';
+
+  if (!document.querySelector('link[data-local-llm-palette]')) {
+    const palette = document.createElement('link');
+    palette.rel = 'stylesheet';
+    palette.href = './palette.css';
+    palette.dataset.localLlmPalette = 'true';
+    document.head.append(palette);
+  }
+
   queueMicrotask(() => {
     import('./journeys.js');
     import('./model-links.js');
