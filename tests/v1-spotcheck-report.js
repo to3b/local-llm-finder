@@ -44,7 +44,7 @@ const scenarios = [
   macScenario(512, 'coding', 3)
 ];
 
-const run = (scenario, minSpeed) => recommend({
+const run = (scenario, minSpeed = 1) => recommend({
   hardware: scenario.hardware,
   useCases: [scenario.task], primaryUse: scenario.task,
   preference: scenario.preference, minSpeed, contextK: 8,
@@ -52,9 +52,9 @@ const run = (scenario, minSpeed) => recommend({
 });
 
 const lines = [];
-let floorChanges = 0;
+let explicitFloorChanges = 0;
 for (const scenario of scenarios) {
-  const result = run(scenario, scenario.hardware.speedKnown ? 15 : 1);
+  const result = run(scenario, 1);
   assert.ok(result.matches.length || result.catalog.length, `${scenario.name} should have at least one viable model`);
   const top = (result.matches.length ? result.matches : result.catalog).slice(0, 3);
   for (const item of top) assert.ok(item.requiredGB + item.reserveGB <= scenario.hardware.vramGB + 1e-9, `${scenario.name}: ${item.model.name} must fit memory`);
@@ -66,14 +66,11 @@ for (const scenario of scenarios) {
   });
 
   if (scenario.hardware.speedKnown) {
-    const unrestricted = run(scenario, 1);
-    const normalTop = top[0];
-    const unrestrictedTop = (unrestricted.matches.length ? unrestricted.matches : unrestricted.catalog)[0];
-    if (normalTop?.model.id !== unrestrictedTop?.model.id || normalTop?.quant.name !== unrestrictedTop?.quant.name) {
-      floorChanges += 1;
-      lines.push(`  ⚠ hidden 15 tok/s floor changes #1: ${normalTop.model.name} → ${unrestrictedTop.model.name} ${unrestrictedTop.quant.name} (${unrestrictedTop.speedLow}–${unrestrictedTop.speedHigh} tok/s)`);
-    }
+    const floored = run(scenario, 15);
+    const defaultTop = top[0];
+    const flooredTop = (floored.matches.length ? floored.matches : floored.catalog)[0];
+    if (defaultTop?.model.id !== flooredTop?.model.id || defaultTop?.quant.name !== flooredTop?.quant.name) explicitFloorChanges += 1;
   }
 }
 
-console.log(`V1 real-world spot-check report (${scenarios.length} scenarios; hidden speed floor changes ${floorChanges}):${lines.join('\n')}`);
+console.log(`V1 real-world spot-check report (${scenarios.length} scenarios; an explicit 15 tok/s floor would change ${explicitFloorChanges} exact-GPU #1 choices):${lines.join('\n')}`);
