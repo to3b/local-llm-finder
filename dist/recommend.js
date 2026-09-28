@@ -90,11 +90,10 @@ export function recommend({
     const options = quantCandidates.map(quant => {
       const metrics = estimate(model, quant, hardware, contextK);
       const quality = Math.min(100, Math.round(taskQuality(model, useCases, primaryUse) + (quant.qualityBonus ?? 0)));
-      // Preference changes the tradeoff, but a model that is already comfortably
-      // above the speed reference should not keep winning purely for being smaller.
-      // When device speed is unknown, balanced/quality modes stay neutral instead
-      // of treating model size as if it were a benchmark.
-      const qualityWeight = [.24, .46, .70, .82, .92][preference - 1];
+      // The five-stop control should have distinct meanings. Balanced still trades
+      // speed and quality; Stronger and especially Strongest become quality-first,
+      // with speed acting mainly as a tie-break unless the user sets a hard floor.
+      const qualityWeight = [.24, .46, .70, .90, .98][preference - 1];
       const speedKnown = hardware.speedKnown !== false && hardware.mode !== 'unsure';
       let speedUtility;
       if (!speedKnown) {
