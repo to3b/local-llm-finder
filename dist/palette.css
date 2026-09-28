@@ -1,0 +1,37 @@
+/* Apple-inspired palette supplied for the project:
+   green #61BB46, yellow #FDB827, orange #F5821F, red #E03A3E, purple #963D97.
+   The interface remains neutral; these hues only add low-contrast ambient depth. */
+
+body::before {
+  inset: -20vh -16vw;
+  background:
+    radial-gradient(circle at 7% 20%, rgba(97, 187, 70, .105), transparent 28%),
+    radial-gradient(circle at 31% 7%, rgba(253, 184, 39, .070), transparent 27%),
+    radial-gradient(circle at 54% 15%, rgba(245, 130, 31, .078), transparent 29%),
+    radial-gradient(circle at 77% 9%, rgba(224, 58, 62, .068), transparent 28%),
+    radial-gradient(circle at 98% 25%, rgba(150, 61, 151, .100), transparent 31%);
+  filter: blur(34px) saturate(.82);
+  opacity: .62;
+  transform: translate3d(0, 0, 0) scale(1.025);
+  animation-duration: 28s;
+}
+
+body::after {
+  background: linear-gradient(180deg, rgba(23, 24, 26, .12), rgba(23, 24, 26, .80) 72%, var(--page));
+}
+
+.journey-option[aria-pressed="true"] {
+  border-color: #686b70;
+  background:
+    linear-gradient(115deg,
+      rgba(97,187,70,.055),
+      rgba(253,184,39,.032) 28%,
+      rgba(245,130,31,.038) 48%,
+      rgba(224,58,62,.034) 69%,
+      rgba(150,61,151,.060)),
+    rgba(39,39,45,.90);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { animation: none; }
+}
