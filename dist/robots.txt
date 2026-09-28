@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://to3b.github.io/local-llm-finder/sitemap.xml
+Sitemap: https://localllmfinder.com/sitemap.xml
