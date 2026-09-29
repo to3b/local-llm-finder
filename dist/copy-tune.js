@@ -117,8 +117,8 @@ function tuneCopy() {
 
   const heading = hero.querySelector('#page-heading');
   const heroBody = hero.querySelector(':scope > p');
-  if (heading) heading.textContent = 'Find the right local LLM';
-  if (heroBody) heroBody.textContent = 'Match models to your hardware and workload.';
+  if (heading) heading.textContent = 'Which local LLM can your computer run?';
+  if (heroBody) heroBody.textContent = 'Choose your hardware and workload to compare local models by estimated memory use, context length and task fit. Speed estimates are available for supported GPUs.';
 
   const labels = {
     find: ['Find', 'Pick a model'],
