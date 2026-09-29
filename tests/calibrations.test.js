@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { MODELS } from '../dist/data.js';
-import { estimate } from '../dist/recommend.js';
+import { estimate, recommend } from '../dist/recommend.js';
 import { MODEL_CALIBRATIONS } from '../dist/model-calibrations.js';
 import '../dist/catalog-extra.js';
 
@@ -42,6 +42,12 @@ const llamaQ5 = llama.quantizations.find(quant => quant.name === 'Q5_K_M');
 const llama3060Q5 = estimate(llama, llamaQ5, { mode: 'gpu', vramGB: 12, ramGB: 32, bandwidthGBs: 360, speedKnown: true }, 8);
 assert.ok(llama3060Q5.fits, 'Llama 3.1 8B Q5_K_M should fit a 12 GB GPU at 8K context under the planning estimate');
 assert.ok(llama3060Q5.requiredGB + llama3060Q5.reserveGB < 8, 'Llama 3.1 8B Q5_K_M should retain substantial headroom on a 12 GB GPU at 8K context');
+const llamaAuto = recommend({
+  hardware: { mode: 'gpu', vramGB: 12, ramGB: 32, bandwidthGBs: 360, speedKnown: true },
+  useCases: ['coding'], primaryUse: 'coding', preference: 3, minSpeed: 1, contextK: 8,
+  quantization: 'auto', maxWeightsGB: null, family: null
+}, [llama]);
+assert.equal(llamaAuto.matches[0]?.quant.name, 'Q5_K_M', 'Balanced automatic selection should use Llama 3.1 8B Q5_K_M when it comfortably fits 12 GB VRAM');
 
 for (const name of ['Qwen3 8B', 'Qwen2.5-Coder 7B', 'DeepSeek-R1-Distill-Qwen-7B', 'Phi-3.5-mini-instruct']) {
   const model = MODELS.find(item => item.name === name);
