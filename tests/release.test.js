@@ -11,6 +11,7 @@ const files = Object.fromEntries(await Promise.all([
   ['methodology', 'dist/methodology.html'],
   ['privacy', 'dist/privacy.html'],
   ['terms', 'dist/terms.html'],
+  ['docsCss', 'dist/docs.css'],
   ['app', 'dist/app.js'],
   ['journeys', 'dist/journeys.js'],
   ['copyTune', 'dist/copy-tune.js'],
@@ -45,6 +46,15 @@ assert.match(files.knowledge, /<meta name="robots" content="noindex,follow">/, '
 assert.match(files.knowledge, /<link rel="canonical" href="https:\/\/localllmfinder\.com\/knowledge\.html">/);
 assert.ok(files.knowledge.includes('Pages will be published when they have enough useful information to stand on their own.'), 'Knowledge preview must explain the staged publishing approach');
 assert.ok(files.knowledge.includes('href="/"'), 'Knowledge preview must link back to the Finder');
+
+for (const name of ['knowledge', 'methodology', 'privacy', 'terms']) {
+  assert.ok(files[name].includes('docs.css?v=20260929a'), `${name} must use the shared static-page design`);
+  assert.ok(files[name].includes('class="site-topbar"'), `${name} must use the shared site header`);
+  assert.ok(files[name].includes('class="doc-footer"'), `${name} must use the shared site footer`);
+}
+assert.ok(files.docsCss.includes('.docs-shell'), 'shared static-page stylesheet must define the document shell');
+assert.ok(files.docsCss.includes('.doc-hero'), 'shared static-page stylesheet must define the document hero');
+assert.ok(files.docsCss.includes('.site-topbar'), 'shared static-page stylesheet must define the site header');
 
 // Keep the crawlable worked example tied to the same engine/data that powers the UI.
 // This catches stale homepage copy whenever a calibration or ranking change alters it.
@@ -94,4 +104,4 @@ for (const [name, content] of Object.entries(files)) {
   }
 }
 
-console.log('V1 custom-domain, homepage SEO, Knowledge preview and worked-example checks passed.');
+console.log('V1 custom-domain, homepage SEO, shared static-page design, Knowledge preview and worked-example checks passed.');
