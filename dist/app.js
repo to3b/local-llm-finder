@@ -107,7 +107,7 @@ function applyUrlState() {
 }
 
 function setupUrl() {
-  const url = new URL(window.location.href);
+  const url = new URL('/', window.location.origin);
   url.search = '';
   url.hash = '';
   const params = new URLSearchParams();
@@ -237,7 +237,6 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
   if (data.catalog.length) html += `<details class="catalog"><summary>Browse all ${data.catalog.length} models that fit</summary><div class="catalog-body"><p>Includes the shortlist and models below your speed target.</p><label for="catalog-search">Search by model or family</label><input id="catalog-search" type="search" autocomplete="off" placeholder="e.g. Qwen, Gemma, Mistral"><p class="catalog-count" id="catalog-count" aria-live="polite"></p><div class="catalog-list">${data.catalog.map(item => row(item, hardware, primaryUse, useCases, item.meetsSpeed === false)).join('')}</div><p class="catalog-no-results" hidden>No model in this list matches your search.</p><button type="button" class="browse-more" hidden>Show more models</button></div></details>`;
   if (data.slower.length) html += `<section class="secondary"><h3 class="secondary-heading">Fits, but below your speed target</h3>${data.slower.map(item => row(item, hardware, primaryUse, useCases, true)).join('')}</section>`;
   if (hardware.vramGB <= 6 || !data.matches.length) html += resources();
-
   const filterText = data.excluded.filters
     ? ` ${data.excluded.filters} models were removed by your quantization, family or file-size filters.`
     : '';
@@ -299,7 +298,7 @@ function update() {
     bandwidthGBs = undefined;
   }
 
-  const minSpeed = speedKnown ? Number(form.elements.speed.value) : 15;
+  const minSpeed = speedKnown ? Number(form.elements.speed.value) : 1;
   const contextK = Number(form.elements.context.value);
   const quantization = form.elements.quantization.value;
   const maxWeightsGB = form.elements.maxWeights.value ? Number(form.elements.maxWeights.value) : null;
