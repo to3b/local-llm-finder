@@ -4,6 +4,8 @@
 
 **Live tool:** https://localllmfinder.com/
 
+Public site: https://localllmfinder.com/
+
 **Current release:** 1.0.0 — 28 September 2026
 
 Local LLM Finder is a static, browser-only planning tool for choosing, comparing, and upgrading local LLM setups.
