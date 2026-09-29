@@ -1,48 +1,5 @@
 const PRIORITY_LABELS = ['Fastest', 'Faster', 'Balanced', 'Stronger', 'Strongest'];
 
-function bindDevicePanelSync() {
-  const form = document.querySelector('#finder-form');
-  if (!form || form.dataset.devicePanelSync) return;
-  form.dataset.devicePanelSync = 'true';
-  let lastMode = form.elements.device?.value;
-
-  const sync = () => {
-    const mode = form.elements.device?.value;
-    if (!mode) return;
-
-    if (mode !== lastMode) {
-      const override = document.querySelector('#vram-input');
-      const gpuInput = document.querySelector('#gpu-input');
-      const gpuSearch = document.querySelector('#gpu-search');
-      const gpuToggle = document.querySelector('#toggle-gpu-search');
-      if (override) override.value = '';
-      if (gpuInput) gpuInput.value = '';
-      if (gpuSearch) gpuSearch.hidden = true;
-      if (gpuToggle) {
-        gpuToggle.setAttribute('aria-expanded', 'false');
-        gpuToggle.textContent = 'Search by card name';
-      }
-    }
-
-    for (const type of ['gpu', 'mac', 'unsure']) {
-      const fields = document.querySelector(`#${type}-fields`);
-      if (fields) fields.hidden = type !== mode;
-    }
-    const ramField = document.querySelector('#gpu-ram-field');
-    if (ramField) ramField.hidden = mode !== 'gpu';
-    const speedField = document.querySelector('#speed-field');
-    if (speedField && mode !== 'gpu') speedField.hidden = true;
-    lastMode = mode;
-  };
-
-  const onDeviceChange = event => {
-    if (event.target?.name === 'device') sync();
-  };
-  form.addEventListener('input', onDeviceChange);
-  form.addEventListener('change', onDeviceChange);
-  sync();
-}
-
 function enhancePriority() {
   const input = document.querySelector('#priority-input');
   const control = input?.closest('.priority-control');
@@ -193,7 +150,6 @@ function tuneCopy() {
   const taskHelp = document.querySelector('.task-section > .field-help');
   if (taskHelp) taskHelp.textContent = 'This gets the most weight.';
 
-  bindDevicePanelSync();
   enhancePriority();
   enhanceSpeedFloor();
 
@@ -216,7 +172,6 @@ function tuneCopy() {
   return true;
 }
 
-bindDevicePanelSync();
 if (!tuneCopy()) {
   const observer = new MutationObserver(() => {
     if (tuneCopy()) observer.disconnect();
