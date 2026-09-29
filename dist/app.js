@@ -340,6 +340,8 @@ function update() {
 const isFindActive = () => !findView.hidden;
 function scheduleUpdate() {
   if (!isFindActive()) return;
+  // Device visibility is cheap and must update synchronously; recommendation rendering can wait for the frame.
+  updateDevice();
   cancelAnimationFrame(updateFrame);
   updateFrame = requestAnimationFrame(() => {
     updateFrame = undefined;
