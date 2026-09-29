@@ -11,10 +11,10 @@ const fmt = n => Number.isInteger(n) ? String(n) : Number(n).toFixed(1);
 const signed = n => `${n > 0 ? '+' : ''}${Number.isInteger(n) ? n : n.toFixed(1)}`;
 const gpuLabel = gpu => `${gpu.name} — ${gpu.vramGB} GB`;
 
-hero.querySelector('#page-heading').textContent = 'Find the right local LLM';
+hero.querySelector('#page-heading').textContent = 'Which local LLM can your computer run?';
 const heroCopy = hero.querySelectorAll(':scope > p');
-if (heroCopy[1]) heroCopy[1].textContent = 'Match models to your hardware and workload.';
-document.title = 'Local LLM Finder — Find, improve or upgrade your local AI setup';
+if (heroCopy[0]) heroCopy[0].textContent = 'Choose your hardware and workload to compare local models by estimated memory use, context length and task fit. Speed estimates are available for supported GPUs.';
+document.title = 'Local LLM Finder: Find Models for Your GPU, RAM or Mac';
 
 hero.insertAdjacentHTML('afterend', `<nav class="journey-nav" aria-label="Choose what you want to do"><div class="journey-options">
   <button type="button" class="journey-option" data-journey="find" aria-pressed="true"><span>Find</span><small>Pick a model</small></button>
@@ -75,7 +75,7 @@ function state() {
     hardware: { mode, vramGB, ramGB, bandwidthGBs, speedKnown, deviceName },
     useCases: [primaryUse, ...secondary], primaryUse,
     preference: Number(form.elements.priority?.value || 3),
-    minSpeed: speedKnown ? Number(form.elements.speed?.value || 10) : 10,
+    minSpeed: speedKnown ? Number(form.elements.speed?.value || 1) : 1,
     contextK: Number(form.elements.context?.value || 8),
     quantization: form.elements.quantization?.value || 'auto',
     maxWeightsGB: maxRaw ? Number(maxRaw) : null,
@@ -173,7 +173,13 @@ function activate(name, write = true) {
   active = ['find','improve','upgrade'].includes(name) ? name : 'find';
   findView.hidden = active !== 'find'; improveView.hidden = active !== 'improve'; upgradeView.hidden = active !== 'upgrade';
   buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.journey === active)));
-  if (write) { const p = new URLSearchParams(location.hash.slice(1)); p.set('j', active); history.replaceState(null, '', `#${p}`); }
+  if (write) {
+    const p = new URLSearchParams(location.hash.slice(1));
+    p.set('j', active);
+    const url = new URL('/', location.origin);
+    url.hash = p.toString();
+    history.replaceState(null, '', url);
+  }
   refresh();
 }
 let frame;
