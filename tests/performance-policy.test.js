@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 
 const app = fs.readFileSync(new URL('../dist/app.js', import.meta.url), 'utf8');
+const copyTune = fs.readFileSync(new URL('../dist/copy-tune.js', import.meta.url), 'utf8');
 
 const count = (text, pattern) => (text.match(pattern) || []).length;
 
@@ -15,4 +16,9 @@ assert.ok(!app.includes('data.catalog.map(item => row('), 'Full catalogue should
 assert.ok(app.includes('catalogState.items.filter'), 'Catalogue search should filter data before rendering rows');
 assert.ok(app.includes('matches.slice(0, catalogLimit)'), 'Catalogue should render only the visible page of rows');
 
-console.log('UI performance policy passed: scheduled updates, inactive-view guard and lazy catalogue rendering are enforced.');
+assert.ok(copyTune.includes('function bindDevicePanelSync()'), 'Hardware-panel visibility must have a lightweight journey-independent synchronizer');
+assert.ok(copyTune.includes("event.target?.name === 'device'"), 'Hardware-panel sync must react directly to device radio changes');
+assert.ok(copyTune.includes("for (const type of ['gpu', 'mac', 'unsure'])"), 'Hardware-panel sync must cover every device mode');
+assert.ok(copyTune.includes('fields.hidden = type !== mode'), 'Hardware-panel sync must toggle panels immediately without a journey-button click');
+
+console.log('UI performance policy passed: scheduled updates, inactive-view guard, lazy catalogue rendering and journey-independent hardware panels are enforced.');
