@@ -1,8 +1,9 @@
-// Side-effect module: expands the base catalogue before app.js builds its controls.
+// Side-effect module: expands the bundled catalogue, then swaps in the validated live sheet in browsers.
 import { GPUs, MODELS } from './data.js';
 import { EXTRA_GPUS } from './gpu-extra.js';
 import { EXTRA_MODELS } from './model-extra.js';
 import { applyModelCalibrations } from './model-calibrations.js';
+import { loadLiveCatalogue } from './live-data.js';
 
 function appendUnique(target, additions) {
   const ids = new Set(target.map(item => item.id));
@@ -29,6 +30,11 @@ function disambiguateGpuNames() {
 appendUnique(GPUs, EXTRA_GPUS);
 appendUnique(MODELS, EXTRA_MODELS);
 applyModelCalibrations(MODELS);
+
+// In browsers this awaits the published sheet before app.js/journeys.js build their datalists.
+// Node/CI skips the network path and continues to exercise the bundled known-good fallback.
+await loadLiveCatalogue({ GPUs, MODELS });
+
 disambiguateGpuNames();
 GPUs.sort((a, b) => a.name.localeCompare(b.name));
 MODELS.sort((a, b) => a.name.localeCompare(b.name));
