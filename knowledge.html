@@ -1,25 +1,53 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><base href="./dist/"><meta name="theme-color" content="#17181a"><meta name="robots" content="noindex,follow"><meta name="description" content="A preview of the Local LLM Finder knowledge reference: model requirements, quantization, context and practical hardware guides."><link rel="canonical" href="https://localllmfinder.com/knowledge.html"><title>Knowledge Preview — Local LLM Finder</title><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css?v=20260929d"><link rel="stylesheet" href="./palette.css?v=20260929d" data-local-llm-palette><style>
-    .knowledge-shell{width:min(100%,860px);margin:0 auto;padding:0 28px 64px}
-    .knowledge-topbar{min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line)}
-    .knowledge-brand{color:var(--text);font-size:.98rem;font-weight:650;letter-spacing:-.02em;text-decoration:none}
-    .knowledge-topbar a:last-child{color:var(--muted);font-size:.8rem;text-decoration:none}
-    .knowledge-hero{padding:48px 0 30px;border-bottom:1px solid var(--line)}
-    .knowledge-hero h1{margin:0;max-width:690px;font-size:clamp(2rem,6vw,3.25rem);line-height:1.03;letter-spacing:-.055em;font-weight:650}
-    .knowledge-hero>p:not(.eyebrow){max-width:690px;margin:15px 0 0;color:var(--muted);font-size:.94rem;line-height:1.62}
-    .status-chip{display:inline-flex;margin-top:18px;padding:6px 9px;border:1px solid var(--line-strong);border-radius:999px;color:#d9d9d5;background:var(--surface);font-size:.72rem}
-    .preview-section{padding:30px 0;border-bottom:1px solid var(--line)}
-    .preview-section h2{margin:0;font-size:1.25rem;letter-spacing:-.03em;font-weight:620}
-    .preview-section>p{margin:8px 0 0;color:var(--muted);font-size:.86rem;line-height:1.55}
-    .preview-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
-    .preview-card{padding:15px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
-    .preview-card small{display:block;margin-bottom:7px;color:var(--quiet);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em}
-    .preview-card strong{display:block;font-size:.88rem}
-    .preview-card p{margin:7px 0 0;color:var(--muted);font-size:.76rem;line-height:1.5}
-    .principle{margin-top:18px;padding:14px 15px;border-left:2px solid var(--line-strong);background:var(--surface);color:#d2d2ce;font-size:.82rem;line-height:1.55}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px}
-    .primary,.secondary{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:0 14px;border-radius:7px;font-size:.8rem;text-decoration:none}
-    .primary{background:var(--selection);border:1px solid var(--selection);color:#1c1d1f;font-weight:650}
-    .secondary{background:var(--surface);border:1px solid var(--line-strong);color:var(--text)}
-    .knowledge-footer{display:flex;justify-content:space-between;gap:16px;padding-top:24px;color:var(--quiet);font-size:.75rem}
-    @media(max-width:700px){.knowledge-shell{padding-left:18px;padding-right:18px}.preview-grid{grid-template-columns:1fr}.knowledge-footer{flex-direction:column}}
-  </style></head><body><main class="knowledge-shell"><header class="knowledge-topbar"><a class="knowledge-brand" href="/">Local LLM Finder</a><a href="/">Back to Finder</a></header><section class="knowledge-hero"><p class="eyebrow">Knowledge</p><h1>A reference layer for the Finder.</h1><p>Model and hardware pages are being built from the same catalogue that powers Local LLM Finder. They’ll explain requirements, quantization sizes, context limits and sourced model details without turning the site into a pile of empty template pages.</p><span class="status-chip">In development</span><div class="actions"><a class="primary" href="/">Use the Finder</a><a class="secondary" href="/dist/methodology.html">Read the methodology</a></div></section><section class="preview-section"><h2>First pages</h2><p>The initial set is deliberately small. Pages will be published when they have enough useful information to stand on their own.</p><div class="preview-grid"><article class="preview-card"><small>Models</small><strong>Qwen3 8B</strong><p>Quant sizes, context, memory estimates and hardware fit.</p></article><article class="preview-card"><small>Models</small><strong>Qwen2.5-Coder 14B</strong><p>Coding-focused profile, quantization choices and practical memory requirements.</p></article><article class="preview-card"><small>Models</small><strong>gpt-oss-20b</strong><p>Architecture, active parameters and what the model’s memory footprint means locally.</p></article><article class="preview-card"><small>Hardware</small><strong>RTX 3060 12 GB</strong><p>A practical VRAM-tier guide tied back to live Finder results.</p></article><article class="preview-card"><small>Guide</small><strong>Q4 vs Q5</strong><p>A plain-English explanation of the size/quality trade-off.</p></article><article class="preview-card"><small>Guide</small><strong>Context length</strong><p>Why longer context changes memory use even when the model file stays the same.</p></article></div><div class="principle">The Finder remains the live product while Knowledge grows. No empty model pages are being indexed just to fill out a directory.</div></section><footer class="knowledge-footer"><span>Local LLM Finder</span><span>Knowledge pages will appear here as they’re ready.</span></footer></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <base href="./dist/">
+  <meta name="theme-color" content="#17181a">
+  <meta name="robots" content="noindex,follow">
+  <meta name="description" content="A preview of the Local LLM Finder knowledge reference: model requirements, quantization, context and practical hardware guides.">
+  <link rel="canonical" href="https://localllmfinder.com/knowledge.html">
+  <title>Knowledge Preview — Local LLM Finder</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css?v=20260929d">
+  <link rel="stylesheet" href="./docs.css?v=20260929a">
+  <link rel="stylesheet" href="./palette.css?v=20260929d" data-local-llm-palette>
+</head>
+<body>
+  <main class="docs-shell">
+    <header class="site-topbar">
+      <a class="site-brand" href="/">Local LLM Finder</a>
+      <nav class="site-nav" aria-label="Site">
+        <a href="/">Finder</a>
+        <a class="knowledge-nav" href="/knowledge.html" aria-current="page">Knowledge</a>
+        <a href="./methodology.html">Methodology</a>
+      </nav>
+    </header>
+
+    <section class="doc-hero" aria-labelledby="page-heading">
+      <p class="eyebrow">Knowledge</p>
+      <h1 id="page-heading">A reference layer for the Finder.</h1>
+      <p class="doc-lede">Model and hardware pages are being built from the same catalogue that powers Local LLM Finder. They’ll explain requirements, quantization sizes, context limits and sourced model details without turning the site into a pile of empty template pages.</p>
+      <div class="doc-meta"><span class="doc-chip">In development</span><span>Small, reviewed batches rather than empty directory pages</span></div>
+      <div class="doc-actions"><a class="doc-button primary" href="/">Use the Finder</a><a class="doc-button secondary" href="./methodology.html">Read the methodology</a></div>
+    </section>
+
+    <section class="preview-section" aria-labelledby="first-pages-heading">
+      <h2 id="first-pages-heading">First pages</h2>
+      <p>The initial set is deliberately small. Pages will be published when they have enough useful information to stand on their own.</p>
+      <div class="preview-grid">
+        <article class="preview-card"><small>Models</small><strong>Qwen3 8B</strong><p>Quant sizes, context, memory estimates and hardware fit.</p></article>
+        <article class="preview-card"><small>Models</small><strong>Qwen2.5-Coder 14B</strong><p>Coding-focused profile, quantization choices and practical memory requirements.</p></article>
+        <article class="preview-card"><small>Models</small><strong>gpt-oss-20b</strong><p>Architecture, active parameters and what the model’s memory footprint means locally.</p></article>
+        <article class="preview-card"><small>Hardware</small><strong>RTX 3060 12 GB</strong><p>A practical VRAM-tier guide tied back to live Finder results.</p></article>
+        <article class="preview-card"><small>Guide</small><strong>Q4 vs Q5</strong><p>A plain-English explanation of the size/quality trade-off.</p></article>
+        <article class="preview-card"><small>Guide</small><strong>Context length</strong><p>Why longer context changes memory use even when the model file stays the same.</p></article>
+      </div>
+      <div class="doc-callout"><strong>The Finder stays primary</strong><p>The Finder remains the live product while Knowledge grows. No empty model pages are being indexed just to fill out a directory.</p></div>
+    </section>
+
+    <footer class="doc-footer"><span>Local LLM Finder</span><nav aria-label="Footer"><a href="./methodology.html">Methodology</a><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a></nav></footer>
+  </main>
+</body>
+</html>
