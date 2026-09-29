@@ -6,15 +6,15 @@
   <base href="./dist/">
   <meta name="theme-color" content="#17181a">
   <meta name="robots" content="index,follow,max-image-preview:large">
-  <meta name="description" content="Find local LLMs that fit your GPU, Mac or computer memory. Compare memory needs, task fit, context and rough speed estimates.">
+  <meta name="description" content="Find local LLMs for your GPU, Mac or PC. Compare estimated memory use, context length and task fit, then see what a memory upgrade unlocks.">
   <link rel="canonical" href="https://localllmfinder.com/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Local LLM Finder">
-  <meta property="og:title" content="Local LLM Finder — Find the right local model">
-  <meta property="og:description" content="Match local LLMs to your hardware and workload.">
+  <meta property="og:title" content="Local LLM Finder: Find Models for Your GPU, RAM or Mac">
+  <meta property="og:description" content="Find local LLMs for your GPU, Mac or PC. Compare estimated memory use, context length and task fit.">
   <meta property="og:url" content="https://localllmfinder.com/">
   <meta name="twitter:card" content="summary">
-  <title>Local LLM Finder — Find the right local model</title>
+  <title>Local LLM Finder: Find Models for Your GPU, RAM or Mac</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css?v=20260928e">
   <link rel="stylesheet" href="./tiers.css?v=20260928e">
@@ -28,15 +28,15 @@
     "applicationCategory": "UtilitiesApplication",
     "operatingSystem": "Any",
     "isAccessibleForFree": true,
-    "description": "A browser-based planning tool for matching local language models to available hardware."
+    "description": "Find local LLMs for a GPU, Mac or PC by estimated memory use, context length and task fit."
   }
   </script>
 </head>
 <body>
   <main class="app-shell">
     <section class="hero" aria-labelledby="page-heading">
-      <h1 id="page-heading">Find the right local LLM</h1>
-      <p>Match models to your hardware and workload.</p>
+      <h1 id="page-heading">Which local LLM can your computer run?</h1>
+      <p>Choose your hardware and workload to compare local models by estimated memory use, context length and task fit. Speed estimates are available for supported GPUs.</p>
     </section>
 
     <form id="finder-form" novalidate>
@@ -99,7 +99,7 @@
             <label><input type="checkbox" name="secondaryUse" value="longContext"><span>Read long files</span></label>
           </fieldset><p class="field-help">Secondary uses influence ranking; main use stays primary.</p></div>
           <div class="field"><label for="context-input">Text limit</label><select id="context-input" name="context"><option value="4">4,000 tokens (~3,000 words)</option><option value="8" selected>8,000 tokens (~6,000 words)</option><option value="16">16,000 tokens (~12,000 words)</option><option value="32">32,000 tokens (~24,000 words)</option><option value="64">64,000 tokens (~48,000 words)</option></select><p class="field-help">Includes prompt, pasted text and reply.</p></div>
-          <div class="field" id="speed-field" hidden><label for="speed-input">Minimum speed (tokens/second)</label><input id="speed-input" name="speed" type="number" min="1" max="500" step="1" value="10" inputmode="numeric"></div>
+          <div class="field" id="speed-field" hidden><label for="speed-input">Minimum speed (tokens/second)</label><input id="speed-input" name="speed" type="number" min="1" max="500" step="1" value="1" inputmode="numeric"></div>
           <div class="field" id="gpu-ram-field" hidden><label for="ram-input">Computer RAM</label><select id="ram-input" name="ram"><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32" selected>32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select></div>
         </div>
       </details>
@@ -120,6 +120,18 @@
       <div class="results-heading"><div><h2 id="results-heading">Matches</h2><p id="results-subtitle" aria-live="polite">Example: 16 GB RAM.</p></div><span class="results-note" id="results-note">Catalogue Sep 2026</span></div>
       <div class="result-actions"><button type="button" id="share-setup" class="secondary-button">Copy setup link</button><span id="share-status" class="share-status" role="status" aria-live="polite"></span></div>
       <div id="results-content"><p class="initial-state">Choose hardware and a main use.</p></div>
+    </section>
+
+    <section class="content-section" aria-labelledby="example-heading">
+      <p class="eyebrow">Worked example</p>
+      <h2 id="example-heading">What fits an RTX 3060 12 GB for coding?</h2>
+      <p>Using an RTX 3060 12 GB, 32 GB system RAM, 8K context, Balanced priority, automatic quantization and no speed minimum, the current September 2026 catalogue ranks these three highest. Memory and speed are estimates, not benchmarks.</p>
+      <div class="info-grid">
+        <article><span class="step-number">#1</span><h3>Qwen2.5-Coder 14B</h3><p>Q4_K_M · 11.0 GB estimated memory · 15–21 tok/s rough speed · Very strong coding fit.</p></article>
+        <article><span class="step-number">#2</span><h3>DeepSeek-R1-0528-Qwen3-8B</h3><p>Q5_K_M · 8.6 GB estimated memory · 20–27 tok/s rough speed · Very strong coding fit.</p></article>
+        <article><span class="step-number">#3</span><h3>LFM2.5 8B-A1B</h3><p>Q5_K_M · 8.4 GB estimated memory · 91–124 tok/s rough speed · Good coding fit.</p></article>
+      </div>
+      <p class="field-help">Longer context, a fixed quantization, a hard speed floor or a different workload can change the shortlist. <a href="./methodology.html">See the methodology.</a></p>
     </section>
 
     <section class="content-section" aria-labelledby="how-heading">
@@ -152,7 +164,7 @@
       <nav aria-label="Footer"><a href="./methodology.html">Methodology</a><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a><a href="https://github.com/to3b/local-llm-finder/issues/new/choose" target="_blank" rel="noopener noreferrer">Report issue ↗</a></nav>
     </footer>
   </main>
-  <script type="module" src="./app.js?v=20260928e"></script>
-  <script type="module" src="./copy-tune.js?v=20260928e"></script>
+  <script type="module" src="./app.js?v=20260929a"></script>
+  <script type="module" src="./copy-tune.js?v=20260929a"></script>
 </body>
 </html>
