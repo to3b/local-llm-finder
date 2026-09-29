@@ -1,36 +1,4 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#17181a">
-  <meta name="robots" content="index,follow,max-image-preview:large">
-  <meta name="description" content="Find local LLMs for your GPU, Mac or PC. Compare estimated memory use, context length and task fit, then see what a memory upgrade unlocks.">
-  <link rel="canonical" href="https://localllmfinder.com/">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Local LLM Finder">
-  <meta property="og:title" content="Local LLM Finder: Find Models for Your GPU, RAM or Mac">
-  <meta property="og:description" content="Find local LLMs for your GPU, Mac or PC. Compare estimated memory use, context length and task fit.">
-  <meta property="og:url" content="https://localllmfinder.com/">
-  <meta name="twitter:card" content="summary">
-  <title>Local LLM Finder: Find Models for Your GPU, RAM or Mac</title>
-  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=20260929d">
-  <link rel="stylesheet" href="./tiers.css?v=20260928e">
-  <link rel="stylesheet" href="./palette.css?v=20260929d" data-local-llm-palette>
-  <link rel="modulepreload" href="./app.js?v=20260929e">
-  <link rel="modulepreload" href="./data.js">
-  <link rel="modulepreload" href="./recommend.js?v=20260929e">
-  <link rel="modulepreload" href="./presentation.js">
-  <link rel="modulepreload" href="./catalog-extra.js">
-  <link rel="modulepreload" href="./gpu-extra.js">
-  <link rel="modulepreload" href="./model-extra.js">
-  <link rel="modulepreload" href="./model-calibrations.js">
-  <link rel="modulepreload" href="./live-data.js">
-  <link rel="modulepreload" href="./journeys.js?v=20260929e">
-  <link rel="modulepreload" href="./model-links.js?v=20260929e">
-  <link rel="modulepreload" href="./model-sources.js">
-  <script type="application/ld+json">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#17181a"><meta name="robots" content="index,follow,max-image-preview:large"><meta name="description" content="Find local LLMs for your GPU, Mac or PC. Compare estimated memory use, context length and task fit, then see what a memory upgrade unlocks."><link rel="canonical" href="https://localllmfinder.com/"><meta property="og:type" content="website"><meta property="og:site_name" content="Local LLM Finder"><meta property="og:title" content="Local LLM Finder: Find Models for Your GPU, RAM or Mac"><meta property="og:description" content="Find local LLMs for your GPU, Mac or PC. Compare estimated memory use, context length and task fit."><meta property="og:url" content="https://localllmfinder.com/"><meta name="twitter:card" content="summary"><title>Local LLM Finder: Find Models for Your GPU, RAM or Mac</title><link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./styles.css?v=20260929d"><link rel="stylesheet" href="./tiers.css?v=20260928e"><link rel="stylesheet" href="./palette.css?v=20260929d" data-local-llm-palette><link rel="modulepreload" href="./app.js?v=20260929e"><link rel="modulepreload" href="./data.js"><link rel="modulepreload" href="./recommend.js?v=20260929e"><link rel="modulepreload" href="./presentation.js"><link rel="modulepreload" href="./catalog-extra.js"><link rel="modulepreload" href="./gpu-extra.js"><link rel="modulepreload" href="./model-extra.js"><link rel="modulepreload" href="./model-calibrations.js"><link rel="modulepreload" href="./live-data.js"><link rel="modulepreload" href="./journeys.js?v=20260929e"><link rel="modulepreload" href="./model-links.js?v=20260929e"><link rel="modulepreload" href="./model-sources.js"><script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebApplication",
@@ -41,141 +9,26 @@
     "isAccessibleForFree": true,
     "description": "Find local LLMs for a GPU, Mac or PC by estimated memory use, context length and task fit."
   }
-  </script>
-</head>
-<body>
-  <main class="app-shell">
-    <section class="hero" aria-labelledby="page-heading">
-      <h1 id="page-heading">Which local LLM can your computer run?</h1>
-      <p>Choose your hardware and workload to compare local models by estimated memory use, context length and task fit. Speed estimates are available for supported GPUs.</p>
-    </section>
-
-    <form id="finder-form" novalidate>
-      <div class="tier-start" aria-label="Basic settings"><span class="tier-label">Basic</span></div>
-      <section class="control-section computer-section" aria-labelledby="computer-heading">
-        <div class="section-heading"><h2 id="computer-heading">Hardware</h2></div>
-        <fieldset class="device-choices" aria-label="Choose your computer type">
-          <label><input type="radio" name="device" value="gpu"><span>Graphics card</span></label>
-          <label><input type="radio" name="device" value="mac"><span>Mac</span></label>
-          <label><input type="radio" name="device" value="unsure" checked><span>Not sure</span></label>
-        </fieldset>
-        <div class="device-input" id="gpu-fields" hidden>
-          <label for="gpu-vram">Graphics memory (VRAM)</label>
-          <div class="gpu-entry"><select id="gpu-vram" name="gpuVram"><option value="">Choose amount</option><option value="2">2 GB</option><option value="4">4 GB</option><option value="6">6 GB</option><option value="8">8 GB</option><option value="10">10 GB</option><option value="12">12 GB</option><option value="16">16 GB</option><option value="20">20 GB</option><option value="24">24 GB</option><option value="32">32 GB</option><option value="48">48 GB</option><option value="80">80 GB</option><option value="96">96 GB</option></select><button type="button" id="toggle-gpu-search" class="text-control" aria-expanded="false" aria-controls="gpu-search">Search by card name</button></div>
-          <div class="gpu-search" id="gpu-search" hidden><label for="gpu-input">Graphics card name</label><input id="gpu-input" name="gpu" list="gpu-options" autocomplete="off" placeholder="Search NVIDIA, AMD or Intel"><datalist id="gpu-options"></datalist></div>
-          <p class="field-help">VRAM affects fit. Card model improves speed estimates.</p>
-        </div>
-        <div class="device-input" id="mac-fields" hidden>
-          <label for="mac-memory">Mac memory</label>
-          <select id="mac-memory" name="macMemory"><option value="8">8 GB</option><option value="16" selected>16 GB</option><option value="24">24 GB</option><option value="32">32 GB</option><option value="36">36 GB</option><option value="48">48 GB</option><option value="64">64 GB</option><option value="96">96 GB</option><option value="128">128 GB</option><option value="192">192 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select>
-          <p class="field-help">Memory estimates fit. Exact Mac speed is not estimated yet.</p>
-        </div>
-        <div class="device-input" id="unsure-fields">
-          <fieldset class="memory-choices"><legend>Computer memory (RAM)</legend>
-            <label><input type="radio" name="unsureMemory" value="4"><span>4 GB</span></label>
-            <label><input type="radio" name="unsureMemory" value="8"><span>8 GB</span></label>
-            <label><input type="radio" name="unsureMemory" value="16" checked><span>16 GB</span></label>
-            <label><input type="radio" name="unsureMemory" value="32"><span>32 GB</span></label>
-            <label><input type="radio" name="unsureMemory" value="64"><span>64 GB</span></label>
-            <label><input type="radio" name="unsureMemory" value="128"><span>128 GB</span></label>
-          </fieldset>
-        </div>
-      </section>
-
-      <section class="control-section task-section" aria-labelledby="task-heading">
-        <div class="section-heading"><h2 id="task-heading">Main use</h2><span>Pick one</span></div>
-        <fieldset class="task-choices" aria-label="Choose your main use">
-          <label><input type="radio" name="primaryUse" value="chat" checked><span>Chat</span></label>
-          <label><input type="radio" name="primaryUse" value="coding"><span>Write code</span></label>
-          <label><input type="radio" name="primaryUse" value="reasoning"><span>Solve problems</span></label>
-          <label><input type="radio" name="primaryUse" value="writing"><span>Creative writing</span></label>
-          <label><input type="radio" name="primaryUse" value="longContext"><span>Read long files</span></label>
-        </fieldset>
-        <p class="field-help">This gets the most weight.</p>
-      </section>
-
-      <section class="control-section priority-section" aria-labelledby="priority-heading">
-        <div class="section-heading"><h2 id="priority-heading">Priority</h2></div>
-        <div class="priority-control"><div class="priority-top"><label for="priority-input">Speed <span aria-hidden="true">↔</span> Quality</label><output id="priority-output" for="priority-input">Balanced</output></div><input id="priority-input" name="priority" type="range" min="1" max="5" step="1" value="3" aria-valuetext="Balanced"><div class="range-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div><div class="range-ends"><span>Faster</span><span>Stronger answers</span></div></div>
-      </section>
-
-      <details class="advanced tier-panel" id="advanced-settings">
-        <summary><span><small class="tier-label">Advanced</small>Tune results</span><span id="advanced-summary">8,000 tokens</span></summary>
-        <div class="advanced-fields">
-          <div class="field field-wide"><span class="field-label">Also useful for</span><fieldset class="secondary-task-choices task-choices" aria-label="Choose secondary uses">
-            <label><input type="checkbox" name="secondaryUse" value="chat"><span>Chat</span></label>
-            <label><input type="checkbox" name="secondaryUse" value="coding"><span>Write code</span></label>
-            <label><input type="checkbox" name="secondaryUse" value="reasoning"><span>Solve problems</span></label>
-            <label><input type="checkbox" name="secondaryUse" value="writing"><span>Creative writing</span></label>
-            <label><input type="checkbox" name="secondaryUse" value="longContext"><span>Read long files</span></label>
-          </fieldset><p class="field-help">Secondary uses influence ranking; main use stays primary.</p></div>
-          <div class="field"><label for="context-input">Text limit</label><select id="context-input" name="context"><option value="4">4,000 tokens (~3,000 words)</option><option value="8" selected>8,000 tokens (~6,000 words)</option><option value="16">16,000 tokens (~12,000 words)</option><option value="32">32,000 tokens (~24,000 words)</option><option value="64">64,000 tokens (~48,000 words)</option></select><p class="field-help">Includes prompt, pasted text and reply.</p></div>
-          <div class="field" id="speed-field" hidden><label for="speed-input">Minimum speed (tokens/second)</label><input id="speed-input" name="speed" type="number" min="1" max="500" step="1" value="1" inputmode="numeric"></div>
-          <div class="field" id="gpu-ram-field" hidden><label for="ram-input">Computer RAM</label><select id="ram-input" name="ram"><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32" selected>32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select></div>
-        </div>
-      </details>
-
-      <details class="advanced tier-panel power-settings" id="power-settings">
-        <summary><span><small class="tier-label">Power user</small>Model controls</span><span id="power-summary">Automatic model choices</span></summary>
-        <div class="advanced-fields">
-          <div class="field"><label for="quant-input">Quantization</label><select id="quant-input" name="quantization"><option value="auto" selected>Automatic</option><option value="Q4_K_M">Q4_K_M — smaller</option><option value="Q5_K_M">Q5_K_M — more quality</option><option value="Q8_0">Q8_0 — largest available</option></select><p class="field-help">Automatic picks the best-fitting option. Fixed choices can exclude models.</p></div>
-          <div class="field"><label for="max-weights-input">Maximum model file size</label><select id="max-weights-input" name="maxWeights"><option value="" selected>No limit</option><option value="2">2 GB</option><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32">32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option></select><p class="field-help">Estimated quantized size before runtime/context overhead.</p></div>
-          <div class="field"><label for="family-input">Model family</label><select id="family-input" name="family"><option value="" selected>Any family</option></select><p class="field-help">Leave open for the best overall match.</p></div>
-          <div class="field"><label for="vram-input">Override available memory (GB)</label><input id="vram-input" name="vram" type="number" min="2" max="512" step="0.5" inputmode="decimal" placeholder="Optional"><p class="field-help">Replaces the memory budget; speed estimate is disabled.</p></div>
-        </div>
-      </details>
-      <p id="form-error" class="form-error" role="alert" hidden></p>
-    </form>
-
-    <section class="results" id="results" aria-labelledby="results-heading">
-      <div class="results-heading"><div><h2 id="results-heading">Matches</h2><p id="results-subtitle" aria-live="polite">Example: 16 GB RAM.</p></div><span class="results-note" id="results-note">Catalogue Sep 2026</span></div>
-      <div class="result-actions"><button type="button" id="share-setup" class="secondary-button">Copy setup link</button><span id="share-status" class="share-status" role="status" aria-live="polite"></span></div>
-      <div id="results-content"><p class="initial-state">Choose hardware and a main use.</p></div>
-    </section>
-
-    <section class="content-section" aria-labelledby="example-heading">
-      <p class="eyebrow">Worked example</p>
-      <h2 id="example-heading">What fits an RTX 3060 12 GB for coding?</h2>
-      <p>Using an RTX 3060 12 GB, 32 GB system RAM, 8K context, Balanced priority, automatic quantization and no speed minimum, the current September 2026 catalogue ranks these three highest. Memory and speed are estimates, not benchmarks.</p>
-      <div class="info-grid">
-        <article><span class="step-number">#1</span><h3>Qwen2.5-Coder 14B</h3><p>Q4_K_M · 10.6 GB estimated memory · 16–22 tok/s rough speed · Very strong coding fit.</p></article>
-        <article><span class="step-number">#2</span><h3>DeepSeek-R1-0528-Qwen3-8B</h3><p>Q5_K_M · 8.6 GB estimated memory · 20–27 tok/s rough speed · Very strong coding fit.</p></article>
-        <article><span class="step-number">#3</span><h3>Qwen2.5-Coder 7B</h3><p>Q5_K_M · 6.8 GB estimated memory · 26–36 tok/s rough speed · Very strong coding fit.</p></article>
-      </div>
-      <p class="field-help">Longer context, a fixed quantization, a hard speed floor or a different workload can change the shortlist. <a href="./methodology.html">See the methodology.</a></p>
-    </section>
-
-    <section class="content-section" aria-labelledby="how-heading">
-      <p class="eyebrow">How it works</p>
-      <h2 id="how-heading">How the finder works</h2>
-      <div class="info-grid">
-        <article><span class="step-number">01</span><h3>Fit</h3><p>Model, context and reserve memory are checked against your available memory.</p></article>
-        <article><span class="step-number">02</span><h3>Rank</h3><p>Models are ranked for your selected workload and speed/quality preference.</p></article>
-        <article><span class="step-number">03</span><h3>Compare</h3><p>Known GPUs also get a rough bandwidth-based speed range.</p></article>
-      </div>
-    </section>
-
-    <section class="content-section faq" aria-labelledby="faq-heading">
-      <p class="eyebrow">Common questions</p>
-      <h2 id="faq-heading">Local LLM basics</h2>
-      <details><summary>What is a local LLM?</summary><p>A language model that runs on your computer. Tools such as Ollama, LM Studio and llama.cpp can run compatible models locally.</p></details>
-      <details><summary>How much VRAM do I need?</summary><p>It depends on model size, quantization and context. Smaller models can use a few GB; larger ones may need 16, 24, 48 GB or more.</p></details>
-      <details><summary>Does more RAM or VRAM make a model smarter?</summary><p>No. More memory lets you run larger models or longer context; it does not improve the same model by itself.</p></details>
-      <details><summary>Are speed figures benchmarks?</summary><p>No. They are rough planning estimates. Runtime, drivers, CPU, settings and prompt length can change real performance.</p></details>
-    </section>
-
-    <section class="disclaimer-panel" aria-labelledby="limitations-heading">
-      <h2 id="limitations-heading">Before relying on a result</h2>
-      <p>Results are experimental estimates. Check the model publisher, licence and runtime before relying on them or buying hardware.</p>
-      <p><a href="./methodology.html">Methodology</a> · <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms &amp; disclaimer</a></p>
-    </section>
-
-    <footer class="site-footer">
-      <span>Local LLM Finder</span>
-      <nav aria-label="Footer"><a href="./methodology.html">Methodology</a><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a><a href="https://github.com/to3b/local-llm-finder/issues/new/choose" target="_blank" rel="noopener noreferrer">Report issue ↗</a></nav>
-    </footer>
-  </main>
-  <script type="module" src="./app.js?v=20260929e"></script>
-  <script type="module" src="./copy-tune.js?v=20260929a"></script>
-</body>
-</html>
+  </script><style>
+    .site-topbar{min-height:62px;display:flex;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid var(--line)}
+    .site-brand{color:var(--text);font-size:.98rem;font-weight:650;letter-spacing:-.02em;text-decoration:none}
+    .site-nav{display:flex;align-items:center;gap:18px}
+    .site-nav a{color:var(--muted);font-size:.8rem;text-decoration:none}
+    .site-nav a:hover{color:var(--text)}
+    .knowledge-preview .knowledge-heading{display:flex;align-items:end;justify-content:space-between;gap:18px}
+    .knowledge-preview .knowledge-heading>div{min-width:0}
+    .knowledge-preview .knowledge-heading h2{margin:0}
+    .knowledge-preview .knowledge-heading p{margin:8px 0 0;color:var(--muted);font-size:.86rem;line-height:1.55}
+    .knowledge-link{flex:none;display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 13px;border:1px solid var(--line-strong);border-radius:7px;color:var(--text);font-size:.8rem;text-decoration:none;background:var(--surface)}
+    .knowledge-link:hover{border-color:var(--selection)}
+    .knowledge-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+    .knowledge-card{padding:15px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+    .knowledge-card small{display:block;margin-bottom:7px;color:var(--quiet);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em}
+    .knowledge-card strong{display:block;font-size:.88rem;font-weight:600}
+    .knowledge-card p{margin:7px 0 0;color:var(--muted);font-size:.76rem;line-height:1.48}
+    @media (max-width:700px){
+      .site-nav a:not(.knowledge-nav){display:none}
+      .knowledge-preview .knowledge-heading{align-items:flex-start;flex-direction:column}
+      .knowledge-grid{grid-template-columns:1fr}
+    }
+  </style></head><body><main class="app-shell"><header class="site-topbar"><a class="site-brand" href="/">Local LLM Finder</a><nav class="site-nav" aria-label="Site"><a href="/">Finder</a><a class="knowledge-nav" href="/knowledge.html">Knowledge</a><a href="./methodology.html">Methodology</a></nav></header><section class="hero" aria-labelledby="page-heading"><p class="eyebrow">Local model compatibility</p><h1 id="page-heading">Which local LLM can your computer run?</h1><p>Choose your hardware and workload to compare local models by estimated memory use, context length and task fit. Speed estimates are available for supported GPUs.</p></section><form id="finder-form" novalidate><div class="tier-start" aria-label="Basic settings"><span class="tier-label">Basic</span></div><section class="control-section computer-section" aria-labelledby="computer-heading"><div class="section-heading"><h2 id="computer-heading">Hardware</h2></div><fieldset class="device-choices" aria-label="Choose your computer type"><label><input type="radio" name="device" value="gpu"><span>Graphics card</span></label><label><input type="radio" name="device" value="mac"><span>Mac</span></label><label><input type="radio" name="device" value="unsure" checked><span>Not sure</span></label></fieldset><div class="device-input" id="gpu-fields" hidden><label for="gpu-vram">Graphics memory (VRAM)</label><div class="gpu-entry"><select id="gpu-vram" name="gpuVram"><option value="">Choose amount</option><option value="2">2 GB</option><option value="4">4 GB</option><option value="6">6 GB</option><option value="8">8 GB</option><option value="10">10 GB</option><option value="12">12 GB</option><option value="16">16 GB</option><option value="20">20 GB</option><option value="24">24 GB</option><option value="32">32 GB</option><option value="48">48 GB</option><option value="80">80 GB</option><option value="96">96 GB</option></select><button type="button" id="toggle-gpu-search" class="text-control" aria-expanded="false" aria-controls="gpu-search">Search by card name</button></div><div class="gpu-search" id="gpu-search" hidden><label for="gpu-input">Graphics card name</label><input id="gpu-input" name="gpu" list="gpu-options" autocomplete="off" placeholder="Search NVIDIA, AMD or Intel"><datalist id="gpu-options"></datalist></div><p class="field-help">VRAM affects fit. Card model improves speed estimates.</p></div><div class="device-input" id="mac-fields" hidden><label for="mac-memory">Mac memory</label><select id="mac-memory" name="macMemory"><option value="8">8 GB</option><option value="16" selected>16 GB</option><option value="24">24 GB</option><option value="32">32 GB</option><option value="36">36 GB</option><option value="48">48 GB</option><option value="64">64 GB</option><option value="96">96 GB</option><option value="128">128 GB</option><option value="192">192 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select><p class="field-help">Memory estimates fit. Exact Mac speed is not estimated yet.</p></div><div class="device-input" id="unsure-fields"><fieldset class="memory-choices"><legend>Computer memory (RAM)</legend><label><input type="radio" name="unsureMemory" value="4"><span>4 GB</span></label><label><input type="radio" name="unsureMemory" value="8"><span>8 GB</span></label><label><input type="radio" name="unsureMemory" value="16" checked><span>16 GB</span></label><label><input type="radio" name="unsureMemory" value="32"><span>32 GB</span></label><label><input type="radio" name="unsureMemory" value="64"><span>64 GB</span></label><label><input type="radio" name="unsureMemory" value="128"><span>128 GB</span></label></fieldset></div></section><section class="control-section task-section" aria-labelledby="task-heading"><div class="section-heading"><h2 id="task-heading">Main use</h2><span>Pick one</span></div><fieldset class="task-choices" aria-label="Choose your main use"><label><input type="radio" name="primaryUse" value="chat" checked><span>Chat</span></label><label><input type="radio" name="primaryUse" value="coding"><span>Write code</span></label><label><input type="radio" name="primaryUse" value="reasoning"><span>Solve problems</span></label><label><input type="radio" name="primaryUse" value="writing"><span>Creative writing</span></label><label><input type="radio" name="primaryUse" value="longContext"><span>Read long files</span></label></fieldset><p class="field-help">This gets the most weight.</p></section><section class="control-section priority-section" aria-labelledby="priority-heading"><div class="section-heading"><h2 id="priority-heading">Priority</h2></div><div class="priority-control"><div class="priority-top"><label for="priority-input">Speed <span aria-hidden="true">↔</span> Quality</label><output id="priority-output" for="priority-input">Balanced</output></div><input id="priority-input" name="priority" type="range" min="1" max="5" step="1" value="3" aria-valuetext="Balanced"><div class="range-ticks" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span></div><div class="range-ends"><span>Faster</span><span>Stronger answers</span></div></div></section><details class="advanced tier-panel" id="advanced-settings"><summary><span><small class="tier-label">Advanced</small>Tune results</span><span id="advanced-summary">8,000 tokens</span></summary><div class="advanced-fields"><div class="field field-wide"><span class="field-label">Also useful for</span><fieldset class="secondary-task-choices task-choices" aria-label="Choose secondary uses"><label><input type="checkbox" name="secondaryUse" value="chat"><span>Chat</span></label><label><input type="checkbox" name="secondaryUse" value="coding"><span>Write code</span></label><label><input type="checkbox" name="secondaryUse" value="reasoning"><span>Solve problems</span></label><label><input type="checkbox" name="secondaryUse" value="writing"><span>Creative writing</span></label><label><input type="checkbox" name="secondaryUse" value="longContext"><span>Read long files</span></label></fieldset><p class="field-help">Secondary uses influence ranking; main use stays primary.</p></div><div class="field"><label for="context-input">Text limit</label><select id="context-input" name="context"><option value="4">4,000 tokens (~3,000 words)</option><option value="8" selected>8,000 tokens (~6,000 words)</option><option value="16">16,000 tokens (~12,000 words)</option><option value="32">32,000 tokens (~24,000 words)</option><option value="64">64,000 tokens (~48,000 words)</option></select><p class="field-help">Includes prompt, pasted text and reply.</p></div><div class="field" id="speed-field" hidden><label for="speed-input">Minimum speed (tokens/second)</label><input id="speed-input" name="speed" type="number" min="1" max="500" step="1" value="1" inputmode="numeric"></div><div class="field" id="gpu-ram-field" hidden><label for="ram-input">Computer RAM</label><select id="ram-input" name="ram"><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32" selected>32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option><option value="256">256 GB</option><option value="512">512 GB</option></select></div></div></details><details class="advanced tier-panel power-settings" id="power-settings"><summary><span><small class="tier-label">Power user</small>Model controls</span><span id="power-summary">Automatic model choices</span></summary><div class="advanced-fields"><div class="field"><label for="quant-input">Quantization</label><select id="quant-input" name="quantization"><option value="auto" selected>Automatic</option><option value="Q4_K_M">Q4_K_M — smaller</option><option value="Q5_K_M">Q5_K_M — more quality</option><option value="Q8_0">Q8_0 — largest available</option></select><p class="field-help">Automatic picks the best-fitting option. Fixed choices can exclude models.</p></div><div class="field"><label for="max-weights-input">Maximum model file size</label><select id="max-weights-input" name="maxWeights"><option value="" selected>No limit</option><option value="2">2 GB</option><option value="4">4 GB</option><option value="8">8 GB</option><option value="16">16 GB</option><option value="32">32 GB</option><option value="64">64 GB</option><option value="128">128 GB</option></select><p class="field-help">Estimated quantized size before runtime/context overhead.</p></div><div class="field"><label for="family-input">Model family</label><select id="family-input" name="family"><option value="" selected>Any family</option></select><p class="field-help">Leave open for the best overall match.</p></div><div class="field"><label for="vram-input">Override available memory (GB)</label><input id="vram-input" name="vram" type="number" min="2" max="512" step="0.5" inputmode="decimal" placeholder="Optional"><p class="field-help">Replaces the memory budget; speed estimate is disabled.</p></div></div></details><p id="form-error" class="form-error" role="alert" hidden></p></form><section class="results" id="results" aria-labelledby="results-heading"><div class="results-heading"><div><h2 id="results-heading">Matches</h2><p id="results-subtitle" aria-live="polite">Example: 16 GB RAM.</p></div><span class="results-note" id="results-note">Catalogue Sep 2026</span></div><div class="result-actions"><button type="button" id="share-setup" class="secondary-button">Copy setup link</button><span id="share-status" class="share-status" role="status" aria-live="polite"></span></div><div id="results-content"><p class="initial-state">Choose hardware and a main use.</p></div></section><section class="content-section knowledge-preview" aria-labelledby="knowledge-heading"><p class="eyebrow">Knowledge · building now</p><div class="knowledge-heading"><div><h2 id="knowledge-heading">Understand the models behind the results</h2><p>A compact reference section is being built from the same catalogue as the Finder. The first pages will cover model requirements, quantization sizes, context and practical hardware guidance.</p></div><a class="knowledge-link" href="/knowledge.html">See what’s planned →</a></div><div class="knowledge-grid"><article class="knowledge-card"><small>Model page</small><strong>Qwen3 8B</strong><p>Quant sizes, context, memory estimates and hardware fit.</p></article><article class="knowledge-card"><small>Hardware guide</small><strong>RTX 3060 12 GB</strong><p>What its VRAM tier can realistically open up for local models.</p></article><article class="knowledge-card"><small>Guide</small><strong>Q4 vs Q5</strong><p>What changes when you trade model size for a little more quality.</p></article></div></section><section class="content-section" aria-labelledby="example-heading"><p class="eyebrow">Worked example</p><h2 id="example-heading">What fits an RTX 3060 12 GB for coding?</h2><p>Using an RTX 3060 12 GB, 32 GB system RAM, 8K context, Balanced priority, automatic quantization and no speed minimum, the current September 2026 catalogue ranks these three highest. Memory and speed are estimates, not benchmarks.</p><div class="info-grid"><article><span class="step-number">#1</span><h3>Qwen2.5-Coder 14B</h3><p>Q4_K_M · 10.6 GB estimated memory · 16–22 tok/s rough speed · Very strong coding fit.</p></article><article><span class="step-number">#2</span><h3>DeepSeek-R1-0528-Qwen3-8B</h3><p>Q5_K_M · 8.6 GB estimated memory · 20–27 tok/s rough speed · Very strong coding fit.</p></article><article><span class="step-number">#3</span><h3>Qwen2.5-Coder 7B</h3><p>Q5_K_M · 6.8 GB estimated memory · 26–36 tok/s rough speed · Very strong coding fit.</p></article></div><p class="field-help">Longer context, a fixed quantization, a hard speed floor or a different workload can change the shortlist. <a href="./methodology.html">See the methodology.</a></p></section><section class="content-section" aria-labelledby="how-heading"><p class="eyebrow">How it works</p><h2 id="how-heading">How the finder works</h2><div class="info-grid"><article><span class="step-number">01</span><h3>Fit</h3><p>Model, context and reserve memory are checked against your available memory.</p></article><article><span class="step-number">02</span><h3>Rank</h3><p>Models are ranked for your selected workload and speed/quality preference.</p></article><article><span class="step-number">03</span><h3>Compare</h3><p>Known GPUs also get a rough bandwidth-based speed range.</p></article></div></section><section class="content-section faq" aria-labelledby="faq-heading"><p class="eyebrow">Common questions</p><h2 id="faq-heading">Local LLM basics</h2><details><summary>What is a local LLM?</summary><p>A language model that runs on your computer. Tools such as Ollama, LM Studio and llama.cpp can run compatible models locally.</p></details><details><summary>How much VRAM do I need?</summary><p>It depends on model size, quantization and context. Smaller models can use a few GB; larger ones may need 16, 24, 48 GB or more.</p></details><details><summary>Does more RAM or VRAM make a model smarter?</summary><p>No. More memory lets you run larger models or longer context; it does not improve the same model by itself.</p></details><details><summary>Are speed figures benchmarks?</summary><p>No. They are rough planning estimates. Runtime, drivers, CPU, settings and prompt length can change real performance.</p></details></section><section class="disclaimer-panel" aria-labelledby="limitations-heading"><h2 id="limitations-heading">Before relying on a result</h2><p>Results are experimental estimates. Check the model publisher, licence and runtime before relying on them or buying hardware.</p><p><a href="./methodology.html">Methodology</a> · <a href="./privacy.html">Privacy</a> · <a href="./terms.html">Terms &amp; disclaimer</a></p></section><footer class="site-footer"><span>Local LLM Finder</span><nav aria-label="Footer"><a href="/knowledge.html">Knowledge</a><a href="./methodology.html">Methodology</a><a href="./privacy.html">Privacy</a><a href="./terms.html">Terms</a><a href="https://github.com/to3b/local-llm-finder/issues/new/choose" target="_blank" rel="noopener noreferrer">Report issue ↗</a></nav></footer></main><script type="module" src="./app.js?v=20260929e"></script><script type="module" src="./copy-tune.js?v=20260929a"></script></body></html>
