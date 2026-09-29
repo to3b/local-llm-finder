@@ -9,6 +9,7 @@ assert.equal(count(app, /form\.addEventListener\('input'/g), 1, 'Finder should h
 assert.equal(count(app, /form\.addEventListener\('change'/g), 0, 'Finder should not duplicate form work on change after input');
 assert.ok(app.includes('requestAnimationFrame(() => {'), 'Finder updates should be scheduled, not run synchronously for every event');
 assert.ok(app.includes('if (!isFindActive()) return;'), 'Hidden Find journey should not recompute recommendations');
+assert.match(app, /function scheduleUpdate\(\) \{[\s\S]*?if \(!isFindActive\(\)\) return;[\s\S]*?updateDevice\(\);[\s\S]*?requestAnimationFrame/, 'Visible Find journey must synchronize hardware panels before deferred recommendation rendering');
 assert.ok(app.includes("event.target === gpuInput && gpuInput.value.trim() && !selectedGPU()"), 'Partial GPU-name typing should skip full recommendation updates');
 assert.ok(!app.includes('data.catalog.map(item => row('), 'Full catalogue should not be rendered during every finder update');
 assert.ok(app.includes('catalogState.items.filter'), 'Catalogue search should filter data before rendering rows');
