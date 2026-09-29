@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { huggingFaceModelLink } from '../dist/model-links.js';
+import { huggingFaceModelLink, huggingFaceAnchor } from '../dist/model-links.js';
 
 for (const [name, suffix] of [
   ['Qwen3 32B', 'Qwen/Qwen3-32B'],
@@ -21,3 +21,11 @@ assert.equal(fallback.direct, false);
 assert.match(fallback.url, /huggingface\.co\/models\?search=/);
 
 console.log('Model-link provenance passed.');
+
+const publisherAnchor = huggingFaceAnchor({ name: 'Qwen3 32B' });
+assert.match(publisherAnchor, /href="https:\/\/huggingface\.co\/Qwen\/Qwen3-32B"/);
+assert.match(publisherAnchor, /rel="noopener noreferrer"/);
+assert.match(publisherAnchor, /Publisher repository verified 2026-09-28/);
+const searchAnchor = huggingFaceAnchor({ name: 'Unknown "model" & family' });
+assert.match(searchAnchor, /search=Unknown%20%22model%22%20%26%20family/);
+assert.match(searchAnchor, /Search on Hugging Face/);

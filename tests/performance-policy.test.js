@@ -22,3 +22,18 @@ assert.equal(count(journeys, /form\.addEventListener\('input'/g), 1);
 assert.equal(count(journeys, /form\.addEventListener\('change'/g), 0, 'Journey changes must not duplicate input work');
 assert.ok(journeys.includes("if (active === 'find') return;"), 'Inactive comparison journeys must not schedule work');
 assert.ok(journeys.includes("event.target.value.trim() && !gpu()"), 'Partial GPU names must not rerun capacity simulations');
+
+// Rendering policy: no perpetual decorative animation or document-wide result
+// rewriting. These checks guard the mechanisms, not a device-specific FPS claim.
+const styles = fs.readFileSync(new URL('../dist/styles.css', import.meta.url), 'utf8');
+const palette = fs.readFileSync(new URL('../dist/palette.css', import.meta.url), 'utf8');
+for (const css of [styles, palette]) {
+  assert.doesNotMatch(css, /ambient-drift|filter:\s*(?:blur|brightness)/, 'Ambient and hover effects must not require filtered layers');
+  assert.doesNotMatch(css, /position:\s*fixed|background-attachment:\s*fixed/, 'Decorative backgrounds must scroll with the document');
+}
+const links = fs.readFileSync(new URL('../dist/model-links.js', import.meta.url), 'utf8');
+assert.doesNotMatch(links, /MutationObserver|document\./, 'Model links must render directly without observing and rewriting the document');
+assert.ok(app.includes('huggingFaceAnchor(model)'), 'Finder rows must include publisher links on first render');
+assert.ok(journeys.includes('huggingFaceAnchor(item.model)'), 'Comparison cards must include publisher links');
+assert.ok(journeys.includes('huggingFaceAnchor(candidate.model)'), 'Upgrade milestones must include publisher links');
+console.log('Rendering policy passed: static backgrounds, filter-free hover and direct model links.');

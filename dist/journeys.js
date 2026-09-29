@@ -1,6 +1,7 @@
 import { GPUs, MODELS } from './data.js';
 import { recommend } from './recommend.js';
 import { fitLabel, fitDelta } from './presentation.js';
+import { huggingFaceAnchor } from './model-links.js';
 
 const form = document.querySelector('#finder-form');
 const findView = document.querySelector('#results');
@@ -93,8 +94,9 @@ function run(s, changes = {}, models = MODELS) {
 }
 
 function card(item, hardware, label) {
-  const speed = hardware.speedKnown ? `${item.speedLow}–${item.speedHigh} tok/s` : 'Not estimated';
-  return `<article class="decision-card"><span class="decision-label">${label}</span><h3>${item.model.name}</h3><p>${item.quant.name} · ${fmt(item.requiredGB)} GB estimated memory</p><dl><div><dt>Task fit</dt><dd>${fitLabel(item.quality)}</dd></div><div><dt>Speed</dt><dd>${speed}</dd></div><div><dt>Context</dt><dd>${item.model.contextK}K</dd></div></dl></article>`;
+  const speed = hardware.speedKnown ? `${item.speedLow}–${item.speedHigh} tok/s · rough` : 'Needs exact GPU';
+  const speedLabel = hardware.speedKnown ? 'Speed estimate · rough' : 'Speed estimate';
+  return `<article class="decision-card"><span class="decision-label">${label}</span><h3>${item.model.name}</h3><p>${item.quant.name} · ${fmt(item.requiredGB)} GB estimated memory</p><dl><div><dt>Task fit</dt><dd>${fitLabel(item.quality)}</dd></div><div><dt>${speedLabel}</dt><dd>${speed}</dd></div><div><dt>Context</dt><dd>${item.model.contextK}K</dd></div></dl><p class="model-links">${huggingFaceAnchor(item.model)}</p></article>`;
 }
 
 function renderImprove() {
@@ -165,7 +167,7 @@ function renderUpgrade() {
   const unit = s.customMemory ? 'GB available memory' : s.mode === 'gpu' ? 'GB VRAM' : s.mode === 'mac' ? 'GB unified memory' : 'GB RAM';
   const start = `${fmt(s.customMemory || s.mode === 'gpu' ? s.hardware.vramGB : s.hardware.ramGB)} ${unit}`;
   if (!milestones.length) return void (upgradeContent.innerHTML = `<div class="decision-summary"><span class="decision-kicker">Capacity check</span><h3>More memory does not quickly change the top recommendation</h3><p>Starting from ${start}, the tested higher-memory tiers did not create a meaningfully stronger top pick under these preferences.</p></div>${card(base, baseHardware, 'Current capacity pick')}<p class="journey-caveat">This isolates memory capacity only; it does not compare compute, bandwidth, price or measured speed.</p>`);
-  upgradeContent.innerHTML = `<div class="decision-summary decision-positive"><span class="decision-kicker">Next meaningful capacity steps</span><h3>Your current top capacity pick is ${base.model.name}</h3><p>Starting from ${start}, these are the first higher-memory tiers where the recommendation changes enough to matter.</p></div><div class="upgrade-list">${milestones.map(({amount,candidate,previous}) => `<article class="upgrade-milestone"><span class="decision-label">At ${amount} ${unit}</span><h3>${candidate.model.name}</h3><p>${previous.model.id === candidate.model.id ? `${previous.quant.name} → ${candidate.quant.name}` : `${previous.model.name} → ${candidate.model.name}`}</p><div class="milestone-meta"><span>Task fit <strong>${fitDelta(candidate.quality - previous.quality)}</strong></span><span>${candidate.quant.name}</span><span>${fmt(candidate.requiredGB)} GB estimated</span></div></article>`).join('')}</div><p class="journey-caveat">Capacity-only simulation: compute, bandwidth, price and real benchmarks still matter.</p>`;
+  upgradeContent.innerHTML = `<div class="decision-summary decision-positive"><span class="decision-kicker">Next meaningful capacity steps</span><h3>Your current top capacity pick is ${base.model.name}</h3><p>Starting from ${start}, these are the first higher-memory tiers where the recommendation changes enough to matter.</p></div><div class="upgrade-list">${milestones.map(({amount,candidate,previous}) => `<article class="upgrade-milestone"><span class="decision-label">At ${amount} ${unit}</span><h3>${candidate.model.name}</h3><p>${previous.model.id === candidate.model.id ? `${previous.quant.name} → ${candidate.quant.name}` : `${previous.model.name} → ${candidate.model.name}`}</p><div class="milestone-meta"><span>Task fit <strong>${fitDelta(candidate.quality - previous.quality)}</strong></span><span>${candidate.quant.name}</span><span>${fmt(candidate.requiredGB)} GB estimated</span></div><p class="model-links">${huggingFaceAnchor(candidate.model)}</p></article>`).join('')}</div><p class="journey-caveat">Capacity-only simulation: compute, bandwidth, price and real benchmarks still matter.</p>`;
 }
 
 function refresh() { if (active === 'improve') renderImprove(); else if (active === 'upgrade') renderUpgrade(); }

@@ -2,37 +2,14 @@
    green #61BB46, yellow #FDB827, orange #F5821F, red #E03A3E, purple #963D97.
    Keep the interface neutral; colour is ambient rather than decorative. */
 
-body::before,
-body::after {
-  z-index: 0;
-}
-
-.app-shell,
-.legal-shell {
-  position: relative;
-  z-index: 1;
-}
-
-body::before {
-  inset: -18vh -15vw;
-  background:
-    radial-gradient(circle at 4% 15%, rgba(97, 187, 70, .13), transparent 26%),
-    radial-gradient(circle at 29% 4%, rgba(253, 184, 39, .085), transparent 25%),
-    radial-gradient(circle at 52% 11%, rgba(245, 130, 31, .090), transparent 27%),
-    radial-gradient(circle at 75% 5%, rgba(224, 58, 62, .080), transparent 27%),
-    radial-gradient(circle at 100% 18%, rgba(150, 61, 151, .125), transparent 29%);
-  filter: blur(36px) saturate(.88);
-  opacity: .74;
-  transform: translate3d(0, 0, 0) scale(1.03);
-  animation-duration: 30s;
-}
-
-body::after {
-  background: linear-gradient(180deg,
-    rgba(23, 24, 26, .18),
-    rgba(23, 24, 26, .67) 38%,
-    rgba(23, 24, 26, .91) 78%,
-    var(--page));
+/* Soft gradients preserve the palette without a moving, blurred overlay. */
+body {
+  background-image:
+    radial-gradient(ellipse at 4% 0%, rgba(97, 187, 70, .075), transparent 38%),
+    radial-gradient(ellipse at 29% 0%, rgba(253, 184, 39, .05), transparent 36%),
+    radial-gradient(ellipse at 52% 0%, rgba(245, 130, 31, .05), transparent 38%),
+    radial-gradient(ellipse at 75% 0%, rgba(224, 58, 62, .045), transparent 38%),
+    radial-gradient(ellipse at 100% 0%, rgba(150, 61, 151, .07), transparent 40%);
 }
 
 /* The page title is enough; remove the duplicate masthead and eyebrow. */
@@ -206,8 +183,4 @@ body::after {
   .stage-section { padding: 16px 14px 18px; }
   .priority-step { font-size: .65rem; padding-inline: 2px; }
   .content-section { padding: 18px; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
 }
