@@ -208,28 +208,58 @@ async function fetchCsv(gid, signal) {
   return response.text();
 }
 
+// Cache public CSVs only, never user selections. Re-parse and validate on every
+// read so storage cannot bypass the same transactional data contract as fetch.
+const CACHE_KEY = 'local-llm-finder:catalogue:v1';
+const CACHE_MAX_AGE_MS = 5 * 60 * 1000;
+const CACHE_SOURCE = JSON.stringify(LIVE_SHEET);
+
+function buildCatalogue([modelsText, gpusText, calibrationsText]) {
+  const models = buildModelsFromCsv(modelsText);
+  const gpus = buildGpusFromCsv(gpusText);
+  applySheetCalibrations(models, calibrationsText);
+  validateCatalogue(models, gpus);
+  return { models, gpus };
+}
+
+function readCachedCatalogue() {
+  try {
+    const cached = JSON.parse(window.localStorage.getItem(CACHE_KEY));
+    const age = Date.now() - cached?.savedAt;
+    if (cached?.source !== CACHE_SOURCE || !Number.isFinite(age) || age < 0 || age >= CACHE_MAX_AGE_MS) return null;
+    return buildCatalogue(cached.csv);
+  } catch {
+    // Corrupt data, disabled storage and quota/security errors must not block startup.
+    return null;
+  }
+}
+
+function acceptCatalogue({ models, gpus }, GPUs, MODELS, reason) {
+  MODELS.splice(0, MODELS.length, ...models);
+  GPUs.splice(0, GPUs.length, ...gpus);
+  Object.assign(LIVE_DATA_STATE, { source: 'live-sheet', reason, models: models.length, gpus: gpus.length });
+  return true;
+}
+
 export async function loadLiveCatalogue({ GPUs, MODELS, timeoutMs = 3500 } = {}) {
   if (typeof window === 'undefined' || typeof fetch !== 'function' || !Array.isArray(GPUs) || !Array.isArray(MODELS)) return false;
+  const cached = readCachedCatalogue();
+  if (cached) return acceptCatalogue(cached, GPUs, MODELS, 'Validated published Google Sheets data loaded from a recent cache.');
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const [modelsText, gpusText, calibrationsText] = await Promise.all([
+    const csv = await Promise.all([
       fetchCsv(LIVE_SHEET.modelsGid, controller.signal),
       fetchCsv(LIVE_SHEET.gpusGid, controller.signal),
       fetchCsv(LIVE_SHEET.calibrationsGid, controller.signal)
     ]);
-    const models = buildModelsFromCsv(modelsText);
-    const gpus = buildGpusFromCsv(gpusText);
-    applySheetCalibrations(models, calibrationsText);
-    validateCatalogue(models, gpus);
-    MODELS.splice(0, MODELS.length, ...models);
-    GPUs.splice(0, GPUs.length, ...gpus);
-    LIVE_DATA_STATE.source = 'live-sheet';
-    LIVE_DATA_STATE.reason = 'Validated published Google Sheets data loaded.';
-    LIVE_DATA_STATE.models = models.length;
-    LIVE_DATA_STATE.gpus = gpus.length;
-    return true;
+    const catalogue = buildCatalogue(csv);
+    try {
+      window.localStorage.setItem(CACHE_KEY, JSON.stringify({ source: CACHE_SOURCE, savedAt: Date.now(), csv }));
+    } catch { /* Storage is optional; valid network data remains usable. */ }
+    return acceptCatalogue(catalogue, GPUs, MODELS, 'Validated published Google Sheets data loaded.');
   } catch (error) {
+    controller.abort(); // Cancel sibling requests when any required tab fails.
     LIVE_DATA_STATE.source = 'bundled';
     LIVE_DATA_STATE.reason = error?.name === 'AbortError' ? 'Live sheet timed out.' : (error?.message || 'Live sheet could not be loaded.');
     console.warn('Local LLM Finder: using bundled catalogue fallback.', LIVE_DATA_STATE.reason);
