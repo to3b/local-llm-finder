@@ -39,7 +39,8 @@ assert.equal(models[0].calibration.verifiedAt, '2026-09-29');
 
 assert.equal(validateCatalogue(models, gpus, { minModels: 1, minGpus: 1 }), true);
 assert.throws(() => validateCatalogue(models, gpus), /need at least 130/);
-assert.throws(() => buildModelsFromCsv(modelsCsv.replace('test-model', 'disabled').replace('disabled,Disabled Model', 'test-model,Test Model')), /Duplicate Model/);
+const duplicateModelsCsv = `${modelsCsv}\nTRUE,test-model,Another Model,8,,Test,5,64,0.05,80,80,80,80,80,,,OK,`;
+assert.throws(() => buildModelsFromCsv(duplicateModelsCsv), /Duplicate Model ID/);
 assert.match(LIVE_SHEET.base, /docs\.google\.com\/spreadsheets\/d\/e\//);
 assert.equal(LIVE_SHEET.modelsGid, '624018495');
 assert.equal(LIVE_SHEET.gpusGid, '1333766306');
