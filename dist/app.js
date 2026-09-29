@@ -339,9 +339,9 @@ function update() {
 
 const isFindActive = () => !findView.hidden;
 function scheduleUpdate() {
-  if (!isFindActive()) return;
-  // Device visibility is cheap and must update synchronously; recommendation rendering can wait for the frame.
+  // Hardware controls are shared by every journey, so keep their visible state current even when Find is hidden.
   updateDevice();
+  if (!isFindActive()) return;
   cancelAnimationFrame(updateFrame);
   updateFrame = requestAnimationFrame(() => {
     updateFrame = undefined;
