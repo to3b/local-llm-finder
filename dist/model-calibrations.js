@@ -1,12 +1,18 @@
 // Evidence-backed adjustments to prototype ranking inputs.
-// Keep this intentionally small: only override a value when publisher/benchmark
-// evidence directly contradicts an older planning input.
+// Keep this intentionally small: only override a value when direct source evidence
+// contradicts an older planning input.
 export const MODEL_CALIBRATIONS = Object.freeze({
   'Mistral Medium 3.5 128B': {
     quality: { coding: 100 },
     source: 'https://huggingface.co/mistralai/Mistral-Medium-3.5-128B',
     verifiedAt: '2026-09-28',
     note: 'Mistral states Medium 3.5 supersedes its previous coding models and replaces Devstral 2 in Vibe.'
+  },
+  'Llama 3.1 8B Instruct': {
+    quantWeightsGB: { Q4_K_M: 4.92, Q5_K_M: 5.73 },
+    source: 'https://huggingface.co/lmstudio-community/Meta-Llama-3.1-8B-Instruct-GGUF',
+    verifiedAt: '2026-09-29',
+    note: 'LM Studio Community lists the GGUF Q4_K_M artifact at 4.92 GB and Q5_K_M at 5.73 GB.'
   },
   'LFM2.5 8B-A1B': {
     activeParametersB: 1.5,
@@ -21,6 +27,15 @@ export const MODEL_CALIBRATIONS = Object.freeze({
     note: 'Liquid AI lists 24B total parameters and 2.3B active parameters.'
   }
 });
+
+function applyQuantWeightCalibration(model, quantWeightsGB) {
+  for (const quant of model.quantizations) {
+    const calibratedWeight = quantWeightsGB[quant.name];
+    if (Number.isFinite(calibratedWeight) && calibratedWeight > 0) {
+      quant.weightsGB = calibratedWeight;
+    }
+  }
+}
 
 function applyActiveWeightCalibration(model, activeParametersB) {
   model.activeParametersB = activeParametersB;
@@ -37,6 +52,9 @@ export function applyModelCalibrations(models) {
     const calibration = MODEL_CALIBRATIONS[model.name];
     if (!calibration) continue;
     if (calibration.quality) Object.assign(model.quality, calibration.quality);
+    if (calibration.quantWeightsGB) {
+      applyQuantWeightCalibration(model, calibration.quantWeightsGB);
+    }
     if (Number.isFinite(calibration.activeParametersB)) {
       applyActiveWeightCalibration(model, calibration.activeParametersB);
     }
