@@ -3,6 +3,7 @@ import { recommend } from './recommend.js';
 import { fitLabel, isTopTie } from './presentation.js';
 
 const form = document.querySelector('#finder-form');
+const findView = document.querySelector('#results');
 const results = document.querySelector('#results-content');
 const subtitle = document.querySelector('#results-subtitle');
 const resultsNote = document.querySelector('#results-note');
@@ -29,6 +30,8 @@ const listFormatter = new Intl.ListFormat('en', { style: 'long', type: 'conjunct
 let touched = false;
 let lastMode;
 let catalogLimit = 8;
+let catalogState = null;
+let updateFrame;
 
 const gpuOptions = GPUs.map(gpu => { const option = document.createElement('option'); option.value = gpuLabel(gpu); return option; });
 document.querySelector('#gpu-options').replaceChildren(...gpuOptions);
@@ -224,6 +227,7 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
   else if (hardware.mode === 'mac') subtitle.textContent = `Mac with ${fmt(hardware.ramGB)} GB memory · ${taskSummary}`;
   else subtitle.textContent = `${fmt(hardware.ramGB)} GB RAM · ${taskSummary}`;
 
+  catalogState = data.catalog.length ? { items: data.catalog, hardware, primaryUse, useCases } : null;
   let html = '';
   if (data.matches.length) {
     const top = data.matches[0];
@@ -234,7 +238,7 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
       ? `<div class="empty-state"><strong>Nothing meets your speed minimum.</strong><p>Models that fit your other choices but fall below that speed are listed below.</p></div>`
       : `<div class="empty-state"><strong>No model fits these choices.</strong><p>Try a shorter text limit, a looser Power User filter, or more available memory.</p></div>`;
   }
-  if (data.catalog.length) html += `<details class="catalog"><summary>Browse all ${data.catalog.length} models that fit</summary><div class="catalog-body"><p>Includes the shortlist and models below your speed target.</p><label for="catalog-search">Search by model or family</label><input id="catalog-search" type="search" autocomplete="off" placeholder="e.g. Qwen, Gemma, Mistral"><p class="catalog-count" id="catalog-count" aria-live="polite"></p><div class="catalog-list">${data.catalog.map(item => row(item, hardware, primaryUse, useCases, item.meetsSpeed === false)).join('')}</div><p class="catalog-no-results" hidden>No model in this list matches your search.</p><button type="button" class="browse-more" hidden>Show more models</button></div></details>`;
+  if (data.catalog.length) html += `<details class="catalog"><summary>Browse all ${data.catalog.length} models that fit</summary><div class="catalog-body"><p>Includes the shortlist and models below your speed target.</p><label for="catalog-search">Search by model or family</label><input id="catalog-search" type="search" autocomplete="off" placeholder="e.g. Qwen, Gemma, Mistral"><p class="catalog-count" id="catalog-count" aria-live="polite">Open this section to load the catalogue.</p><div class="catalog-list"></div><p class="catalog-no-results" hidden>No model in this list matches your search.</p><button type="button" class="browse-more" hidden>Show more models</button></div></details>`;
   if (data.slower.length) html += `<section class="secondary"><h3 class="secondary-heading">Fits, but below your speed target</h3>${data.slower.map(item => row(item, hardware, primaryUse, useCases, true)).join('')}</section>`;
   if (hardware.vramGB <= 6 || !data.matches.length) html += resources();
   const filterText = data.excluded.filters
@@ -243,29 +247,25 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
   html += `<details class="method-note"><summary>How did we pick these?</summary><p>We estimate model memory, context overhead and headroom, then rank viable models for your main use and speed-versus-quality preference. ${data.excluded.memory} models did not fit the estimated memory; ${data.excluded.context} did not support ${(contextK * 1000).toLocaleString('en-US')} tokens.${filterText} Task fit is shown as a broad label because the underlying capability scores are still prototype ranking inputs, not benchmark-grade measurements. Speed is also an estimate unless stated otherwise.</p></details>`;
   results.innerHTML = html;
   catalogLimit = 8;
-  filterCatalog();
 }
 
 function filterCatalog() {
   const search = results.querySelector('#catalog-search');
-  if (!search) return;
+  const list = results.querySelector('.catalog-list');
+  if (!search || !list || !catalogState) return;
   const query = search.value.trim().toLocaleLowerCase();
-  const rows = [...results.querySelectorAll('.catalog-list .model-row')];
-  let matches = 0;
-  for (const item of rows) {
-    const name = item.querySelector('.model-title strong').textContent.toLocaleLowerCase();
-    const withinLimit = name.includes(query) && matches++ < catalogLimit;
-    item.hidden = !withinLimit;
-  }
-  const shown = Math.min(matches, catalogLimit);
-  results.querySelector('#catalog-count').textContent = `Showing ${shown} of ${matches} matching models`;
-  results.querySelector('.catalog-no-results').hidden = matches !== 0;
+  const matches = catalogState.items.filter(item => `${item.model.name} ${item.model.family}`.toLocaleLowerCase().includes(query));
+  const visible = matches.slice(0, catalogLimit);
+  list.innerHTML = visible.map(item => row(item, catalogState.hardware, catalogState.primaryUse, catalogState.useCases, item.meetsSpeed === false)).join('');
+  results.querySelector('#catalog-count').textContent = `Showing ${visible.length} of ${matches.length} matching models`;
+  results.querySelector('.catalog-no-results').hidden = matches.length !== 0;
   const more = results.querySelector('.browse-more');
-  more.hidden = matches <= catalogLimit;
-  more.textContent = `Show ${Math.min(8, matches - catalogLimit)} more models`;
+  more.hidden = matches.length <= catalogLimit;
+  more.textContent = `Show ${Math.min(8, matches.length - catalogLimit)} more models`;
 }
 
 function empty(message) {
+  catalogState = null;
   results.innerHTML = `<div class="empty-state"><strong>${message}</strong><p>Change your choice above to see models.</p></div>`;
   subtitle.textContent = 'Matches update as you choose.';
 }
@@ -337,11 +337,21 @@ function update() {
   }
 }
 
+const isFindActive = () => !findView.hidden;
+function scheduleUpdate() {
+  if (!isFindActive()) return;
+  cancelAnimationFrame(updateFrame);
+  updateFrame = requestAnimationFrame(() => {
+    updateFrame = undefined;
+    update();
+  });
+}
+
 gpuSearchToggle.addEventListener('click', () => {
   gpuSearch.hidden = !gpuSearch.hidden;
   gpuSearchToggle.setAttribute('aria-expanded', String(!gpuSearch.hidden));
   gpuSearchToggle.textContent = gpuSearch.hidden ? 'Search by card name' : 'Hide card search';
-  if (gpuSearch.hidden) { gpuInput.value = ''; touched = true; update(); }
+  if (gpuSearch.hidden) { gpuInput.value = ''; touched = true; scheduleUpdate(); }
   if (!gpuSearch.hidden) gpuInput.focus();
 });
 
@@ -351,12 +361,28 @@ gpuInput.addEventListener('input', () => {
 });
 
 gpuVram.addEventListener('input', () => { gpuInput.value = ''; });
-form.addEventListener('input', () => { touched = true; update(); });
-form.addEventListener('change', () => { touched = true; update(); });
+form.addEventListener('input', event => {
+  touched = true;
+  // Typing a partial GPU name should not rebuild the recommendation list on every keypress.
+  if (event.target === gpuInput && gpuInput.value.trim() && !selectedGPU()) {
+    updateDevice();
+    return;
+  }
+  scheduleUpdate();
+});
 form.addEventListener('submit', event => event.preventDefault());
 shareButton.addEventListener('click', copySetupLink);
 
+document.addEventListener('click', event => {
+  const journey = event.target.closest?.('[data-journey]');
+  if (journey?.dataset.journey === 'find') scheduleUpdate();
+});
+
 results.addEventListener('click', event => {
+  if (event.target.closest('details.catalog > summary')) {
+    requestAnimationFrame(filterCatalog);
+    return;
+  }
   if (event.target.closest('.browse-more')) { catalogLimit += 8; filterCatalog(); return; }
   const button = event.target.closest('.show-more');
   if (!button) return;
