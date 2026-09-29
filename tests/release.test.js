@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
+import { GPUs } from '../dist/data.js';
+import { recommend } from '../dist/recommend.js';
+import { fitLabel } from '../dist/presentation.js';
 
 const files = Object.fromEntries(await Promise.all([
   ['index', 'index.html'],
@@ -29,8 +32,25 @@ for (const name of ['index', 'distIndex']) {
   assert.ok(files[name].includes(`<title>${homepageTitle}</title>`), `${name} must use the deliberate homepage title`);
   assert.ok(files[name].includes(`<h1 id="page-heading">${homepageHeading}</h1>`), `${name} must expose the hardware-intent H1 in source HTML`);
   assert.ok(files[name].includes('What fits an RTX 3060 12 GB for coding?'), `${name} must include the static worked example`);
-  assert.ok(files[name].includes('Qwen2.5-Coder 14B'), `${name} worked example must include its current top candidate`);
   assert.match(files[name], /id="speed-input"[^>]+value="1"/, `${name} must default to no hard speed floor`);
+}
+
+// Keep the crawlable worked example tied to the same engine/data that powers the UI.
+// This catches stale homepage copy whenever a calibration or ranking change alters it.
+const exampleGpu = GPUs.find(gpu => gpu.id === 'rtx-3060');
+assert.ok(exampleGpu, 'RTX 3060 profile must exist for the homepage example');
+const example = recommend({
+  hardware: { mode: 'gpu', vramGB: 12, ramGB: 32, bandwidthGBs: exampleGpu.bandwidthGBs, speedKnown: true },
+  useCases: ['coding'], primaryUse: 'coding', preference: 3, minSpeed: 1, contextK: 8,
+  quantization: 'auto', maxWeightsGB: null, family: null
+});
+assert.ok(example.matches.length >= 3, 'Homepage worked example requires three current matches');
+const fmt = value => Number.isInteger(value) ? String(value) : value.toFixed(1);
+for (const [rank, item] of example.matches.slice(0, 3).entries()) {
+  const expected = `<article><span class="step-number">#${rank + 1}</span><h3>${item.model.name}</h3><p>${item.quant.name} · ${fmt(item.requiredGB)} GB estimated memory · ${item.speedLow}–${item.speedHigh} tok/s rough speed · ${fitLabel(item.quality)} coding fit.</p></article>`;
+  for (const name of ['index', 'distIndex']) {
+    assert.ok(files[name].includes(expected), `${name} worked example #${rank + 1} must match the current recommendation engine`);
+  }
 }
 
 assert.ok(files.journeys.includes(`document.title = '${homepageTitle}'`), 'journey UI must preserve the source title');
@@ -62,4 +82,4 @@ for (const [name, content] of Object.entries(files)) {
   }
 }
 
-console.log('V1 custom-domain and homepage SEO checks passed.');
+console.log('V1 custom-domain, homepage SEO and worked-example checks passed.');
