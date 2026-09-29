@@ -1,5 +1,12 @@
 # Changelog
 
+## Performance fixes — 29 September 2026
+
+- Reuse validated public catalogue CSVs for five minutes on repeat visits, while preserving all live-sheet validation and bundled fallback checks.
+- Preload the module graph to reduce sequential JavaScript downloads on first visits.
+- Coalesce Improve/Upgrade changes and skip inactive journeys and partial GPU-name input.
+- Cancel remaining sheet requests if one required tab fails; cover cache expiry, corruption, unavailable storage and timeout behavior in CI.
+
 ## 1.0.0 — 28 September 2026
 
 First public release of Local LLM Finder.

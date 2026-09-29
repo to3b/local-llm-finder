@@ -16,3 +16,9 @@ assert.ok(app.includes('catalogState.items.filter'), 'Catalogue search should fi
 assert.ok(app.includes('matches.slice(0, catalogLimit)'), 'Catalogue should render only the visible page of rows');
 
 console.log('UI performance policy passed: hardware state stays synchronized across journeys while recommendation work remains guarded and catalogue rendering stays lazy.');
+
+const journeys = fs.readFileSync(new URL('../dist/journeys.js', import.meta.url), 'utf8');
+assert.equal(count(journeys, /form\.addEventListener\('input'/g), 1);
+assert.equal(count(journeys, /form\.addEventListener\('change'/g), 0, 'Journey changes must not duplicate input work');
+assert.ok(journeys.includes("if (active === 'find') return;"), 'Inactive comparison journeys must not schedule work');
+assert.ok(journeys.includes("event.target.value.trim() && !gpu()"), 'Partial GPU names must not rerun capacity simulations');

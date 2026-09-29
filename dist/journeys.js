@@ -170,6 +170,7 @@ function renderUpgrade() {
 
 function refresh() { if (active === 'improve') renderImprove(); else if (active === 'upgrade') renderUpgrade(); }
 function activate(name, write = true) {
+  cancelAnimationFrame(frame);
   active = ['find','improve','upgrade'].includes(name) ? name : 'find';
   findView.hidden = active !== 'find'; improveView.hidden = active !== 'improve'; upgradeView.hidden = active !== 'upgrade';
   buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.journey === active)));
@@ -183,8 +184,14 @@ function activate(name, write = true) {
   refresh();
 }
 let frame;
-function schedule() { cancelAnimationFrame(frame); frame = requestAnimationFrame(refresh); }
+function schedule(event) {
+  if (active === 'find') return;
+  // A partial card name is not a new hardware selection.
+  if (event?.target?.id === 'gpu-input' && event.target.value.trim() && !gpu()) return;
+  cancelAnimationFrame(frame);
+  frame = requestAnimationFrame(refresh);
+}
 buttons.forEach(b => b.addEventListener('click', () => activate(b.dataset.journey)));
-form.addEventListener('input', schedule); form.addEventListener('change', schedule);
-currentInput.addEventListener('input', renderImprove); currentQuant.addEventListener('change', renderImprove);
+form.addEventListener('input', schedule);
+currentInput.addEventListener('input', schedule); currentQuant.addEventListener('input', schedule);
 activate(new URLSearchParams(location.hash.slice(1)).get('j') || 'find', false);
