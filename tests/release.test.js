@@ -7,6 +7,7 @@ import { fitLabel } from '../dist/presentation.js';
 const files = Object.fromEntries(await Promise.all([
   ['index', 'index.html'],
   ['distIndex', 'dist/index.html'],
+  ['knowledge', 'knowledge.html'],
   ['methodology', 'dist/methodology.html'],
   ['privacy', 'dist/privacy.html'],
   ['terms', 'dist/terms.html'],
@@ -33,7 +34,17 @@ for (const name of ['index', 'distIndex']) {
   assert.ok(files[name].includes(`<h1 id="page-heading">${homepageHeading}</h1>`), `${name} must expose the hardware-intent H1 in source HTML`);
   assert.ok(files[name].includes('What fits an RTX 3060 12 GB for coding?'), `${name} must include the static worked example`);
   assert.match(files[name], /id="speed-input"[^>]+value="1"/, `${name} must default to no hard speed floor`);
+  assert.match(files[name], /id="priority-input"[^>]+min="1"[^>]+max="5"[^>]+step="1"/, `${name} must keep the five-step speed/quality slider`);
+  assert.ok(files[name].includes('id="advanced-settings"'), `${name} must keep Advanced settings`);
+  assert.ok(files[name].includes('id="power-settings"'), `${name} must keep Power user model controls`);
+  assert.ok(files[name].includes('id="quant-input"'), `${name} must keep fixed/automatic quantization controls`);
+  assert.ok(files[name].includes('href="/knowledge.html"'), `${name} must expose the Knowledge preview`);
 }
+
+assert.match(files.knowledge, /<meta name="robots" content="noindex,follow">/, 'Knowledge preview must stay out of search until substantive pages launch');
+assert.match(files.knowledge, /<link rel="canonical" href="https:\/\/localllmfinder\.com\/knowledge\.html">/);
+assert.ok(files.knowledge.includes('Pages will be published when they have enough useful information to stand on their own.'), 'Knowledge preview must explain the staged publishing approach');
+assert.ok(files.knowledge.includes('href="/"'), 'Knowledge preview must link back to the Finder');
 
 // Keep the crawlable worked example tied to the same engine/data that powers the UI.
 // This catches stale homepage copy whenever a calibration or ranking change alters it.
@@ -68,6 +79,7 @@ for (const name of ['methodology', 'privacy', 'terms']) {
 
 assert.match(files.robots, /Sitemap: https:\/\/localllmfinder\.com\/sitemap\.xml/);
 assert.match(files.sitemap, /<loc>https:\/\/localllmfinder\.com\/<\/loc>/);
+assert.ok(!files.sitemap.includes('/knowledge.html'), 'noindex Knowledge preview must not be placed in the sitemap');
 assert.equal(files.cname.trim(), 'localllmfinder.com');
 assert.match(files.readme, /Public site: https:\/\/localllmfinder\.com\//);
 assert.match(files.readme, /135\+ GPU profiles/);
@@ -82,4 +94,4 @@ for (const [name, content] of Object.entries(files)) {
   }
 }
 
-console.log('V1 custom-domain, homepage SEO and worked-example checks passed.');
+console.log('V1 custom-domain, homepage SEO, Knowledge preview and worked-example checks passed.');
