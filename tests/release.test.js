@@ -40,6 +40,9 @@ for (const name of ['index', 'distIndex']) {
   assert.ok(files[name].includes('id="power-settings"'), `${name} must keep Power user model controls`);
   assert.ok(files[name].includes('id="quant-input"'), `${name} must keep fixed/automatic quantization controls`);
   assert.ok(files[name].includes('href="/knowledge.html"'), `${name} must expose the Knowledge preview`);
+  assert.ok(files[name].includes('class="homepage-trust"'), `${name} must keep the compact trust note`);
+  assert.ok(!files[name].includes('How the finder works'), `${name} should not reintroduce the removed filler explainer`);
+  assert.ok(!files[name].includes('Local LLM basics'), `${name} should not reintroduce the removed homepage FAQ`);
 }
 
 assert.match(files.knowledge, /<meta name="robots" content="noindex,follow">/, 'Knowledge preview must stay out of search until substantive pages launch');
@@ -104,4 +107,4 @@ for (const [name, content] of Object.entries(files)) {
   }
 }
 
-console.log('V1 custom-domain, homepage SEO, shared static-page design, Knowledge preview and worked-example checks passed.');
+console.log('V1 custom-domain, homepage SEO, compact support content, shared static-page design, Knowledge preview and worked-example checks passed.');
