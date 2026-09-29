@@ -4,6 +4,7 @@
 
 - Replace the continuously animated, oversized blurred backdrop with static page gradients and use an inset hover highlight instead of a brightness filter.
 - Render publisher links and speed-estimate labels with each result instead of rescanning and rewriting the whole document after DOM changes.
+- Version the changed JavaScript dependencies so repeat visitors receive the rendering fix without waiting for older modules to expire.
 - Keep model-card links on finder rows, comparison cards and upgrade milestones; retain rough-speed and unknown-speed labels.
 
 ## Performance fixes — 29 September 2026
