@@ -1,7 +1,7 @@
 import { GPUs, MODELS } from './data.js';
-import { recommend } from './recommend.js';
+import { recommend } from './recommend.js?v=20260929e';
 import { fitLabel, fitDelta } from './presentation.js';
-import { huggingFaceAnchor } from './model-links.js';
+import { huggingFaceAnchor } from './model-links.js?v=20260929e';
 
 const form = document.querySelector('#finder-form');
 const findView = document.querySelector('#results');
