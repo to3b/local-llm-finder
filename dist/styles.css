@@ -37,7 +37,7 @@ button, summary { cursor: pointer; }
 .device-choices label > span { display: flex; align-items: center; justify-content: center; min-height: 42px; padding: 8px 19px; border-right: 1px solid var(--line-strong); background: var(--surface); color: #d4d4d1; font-size: .875rem; line-height: 1.2; text-align: center; }
 .device-choices label:last-child > span { border-right: 0; }
 .device-choices input:checked + span, .task-choices input:checked + span, .memory-choices input:checked + span { background: var(--selection); border-color: var(--selection); color: #1c1d1f; font-weight: 600; }
-.device-choices label:hover > span, .task-choices label:hover > span, .memory-choices label:hover > span { filter: brightness(1.12); }
+.device-choices label:hover > span, .task-choices label:hover > span, .memory-choices label:hover > span { box-shadow: inset 0 0 0 1px var(--selection); }
 .device-choices input:focus-visible + span, .task-choices input:focus-visible + span, .memory-choices input:focus-visible + span { outline: 2px solid var(--selection); outline-offset: -3px; }
 
 .device-input { margin-top: 15px; }
@@ -230,42 +230,17 @@ input::placeholder { color: var(--quiet); }
   .legal-shell { padding: 0 16px 42px; }
 }
 
-/* Quiet ambient colour: a slow, low-contrast aurora behind the interface. */
+/* Static ambient colour scrolls with the page. Avoid viewport-sized filtered,
+   animated layers: they compete with scrolling and control feedback. */
 body {
-  position: relative;
-  isolation: isolate;
   overflow-x: hidden;
-}
-body::before {
-  content: '';
-  position: fixed;
-  z-index: -1;
-  inset: -18vh -14vw;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 18% 22%, rgba(76, 118, 160, .13), transparent 32%),
-    radial-gradient(circle at 82% 18%, rgba(112, 82, 138, .11), transparent 30%),
-    radial-gradient(circle at 66% 78%, rgba(62, 126, 116, .09), transparent 34%);
-  filter: blur(28px) saturate(.85);
-  opacity: .68;
-  transform: translate3d(0, 0, 0) scale(1.02);
-  animation: ambient-drift 24s ease-in-out infinite alternate;
-}
-body::after {
-  content: '';
-  position: fixed;
-  z-index: -1;
-  inset: 0;
-  pointer-events: none;
-  background: linear-gradient(180deg, rgba(23, 24, 26, .10), rgba(23, 24, 26, .78) 70%, var(--page));
+  background-image:
+    radial-gradient(ellipse at 18% 10%, rgba(76, 118, 160, .07), transparent 42%),
+    radial-gradient(ellipse at 82% 10%, rgba(112, 82, 138, .06), transparent 40%);
+  background-size: 100% 900px;
+  background-repeat: no-repeat;
 }
 
-@keyframes ambient-drift {
-  0% { transform: translate3d(-1.2%, -.8%, 0) scale(1.02); }
-  50% { transform: translate3d(1.4%, .9%, 0) scale(1.055); }
-  100% { transform: translate3d(-.4%, 1.5%, 0) scale(1.035); }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  body::before { animation: none; }
-}
+.model-links { margin: 12px 0 0 !important; }
+.model-external-link { color: #deded9; font-size: .78rem; line-height: 1.4; text-decoration: underline; text-decoration-color: var(--quiet); text-underline-offset: 3px; }
+.model-external-link:hover { text-decoration-color: currentColor; }

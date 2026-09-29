@@ -1,6 +1,7 @@
 import { GPUs, MODELS } from './data.js';
 import { recommend } from './recommend.js';
 import { fitLabel, isTopTie } from './presentation.js';
+import { huggingFaceAnchor } from './model-links.js';
 
 const form = document.querySelector('#finder-form');
 const findView = document.querySelector('#results');
@@ -206,11 +207,12 @@ function row(item, hardware, primaryUse, useCases, slower = false, extra = false
   const secondary = useCases.filter(key => key !== primaryUse);
   const useText = secondary.length ? `${taskNames[primaryUse]} first, with ${taskText(secondary)} as secondary needs` : taskNames[primaryUse];
   const why = `${fitLabel(quality)} fit for ${useText}. ${fit}`;
-  const speed = unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s`;
+  const speed = unknown ? 'Needs exact GPU' : `${speedLow}–${speedHigh} tok/s · rough`;
+  const speedLabel = unknown ? 'Speed estimate' : 'Speed estimate · rough';
   const speedText = unknown ? 'Exact-device speed is not estimated for this setup.' : slower ? `Estimated speed is below your ${fmt(hardware.minSpeed)} tokens/second minimum.` : `Estimated speed meets your ${fmt(hardware.minSpeed)} tokens/second minimum.`;
   return `<details class="model-row ${extra ? 'hidden-row ' : ''}${isTop ? 'top-choice' : ''}">
-    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">#1 choice</span>' : ''}<strong>${model.name}</strong><small>${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : unknown ? ' · Speed not estimated' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span><span class="metric speed"><span>Speed</span><strong>${speed}</strong></span><span class="chevron" aria-hidden="true"></span></summary>
-    <div class="model-details"><p>${why} ${speedText}</p><div class="detail-grid"><div><span class="detail-label">Task fit</span><strong>${fitLabel(quality)}</strong></div><div><span class="detail-label">Text limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div><div><span class="detail-label">Memory</span><strong>${fmt(requiredGB)} GB estimated</strong></div><div><span class="detail-label">Speed</span><strong>${unknown ? 'Not estimated' : `${speedLow}–${speedHigh} tok/s estimated`}</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}</div>
+    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">#1 choice</span>' : ''}<strong>${model.name}</strong><small>${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : unknown ? ' · Speed not estimated' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span><span class="metric speed"><span>${speedLabel}</span><strong>${speed}</strong></span><span class="chevron" aria-hidden="true"></span></summary>
+    <div class="model-details"><p>${why} ${speedText}</p><div class="detail-grid"><div><span class="detail-label">Task fit</span><strong>${fitLabel(quality)}</strong></div><div><span class="detail-label">Text limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div><div><span class="detail-label">Memory</span><strong>${fmt(requiredGB)} GB estimated</strong></div><div><span class="detail-label">${speedLabel}</span><strong>${speed}</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}<p class="model-links">${huggingFaceAnchor(model)}</p></div>
   </details>`;
 }
 

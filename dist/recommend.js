@@ -156,6 +156,5 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
 
   queueMicrotask(() => {
     import('./journeys.js');
-    import('./model-links.js');
   });
 }
