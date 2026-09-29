@@ -24,6 +24,7 @@ const files = Object.fromEntries(await Promise.all([
 ].map(async ([key, path]) => [key, await readFile(path, 'utf8')])));
 
 const publicUrl = 'https://localllmfinder.com/';
+const knowledgeUrl = 'https://knowledge.localllmfinder.com/';
 const homepageTitle = 'Local LLM Finder: Find Models for Your GPU, RAM or Mac';
 const homepageHeading = 'Which local LLM can your computer run?';
 
@@ -39,7 +40,8 @@ for (const name of ['index', 'distIndex']) {
   assert.ok(files[name].includes('id="advanced-settings"'), `${name} must keep Advanced settings`);
   assert.ok(files[name].includes('id="power-settings"'), `${name} must keep Power user model controls`);
   assert.ok(files[name].includes('id="quant-input"'), `${name} must keep fixed/automatic quantization controls`);
-  assert.ok(files[name].includes('href="/knowledge.html"'), `${name} must expose the Knowledge preview`);
+  assert.ok(files[name].includes(`href="${knowledgeUrl}"`), `${name} must link to the Knowledge subdomain`);
+  assert.ok(!files[name].includes('href="/knowledge.html"'), `${name} must not point visitors at the retired local Knowledge preview`);
   assert.ok(files[name].includes('class="homepage-trust"'), `${name} must keep the compact trust note`);
   assert.ok(!files[name].includes('How the finder works'), `${name} should not reintroduce the removed filler explainer`);
   assert.ok(!files[name].includes('Local LLM basics'), `${name} should not reintroduce the removed homepage FAQ`);
@@ -107,4 +109,4 @@ for (const [name, content] of Object.entries(files)) {
   }
 }
 
-console.log('V1 custom-domain, homepage SEO, compact support content, shared static-page design, Knowledge preview and worked-example checks passed.');
+console.log('V1 custom-domain, homepage SEO, compact support content, Knowledge subdomain link, shared static-page design, Knowledge preview and worked-example checks passed.');
