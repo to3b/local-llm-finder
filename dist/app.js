@@ -1,6 +1,6 @@
-import { speedAvailability } from './ui-state.js?v=cleanup-1';
+import { speedAvailability } from './ui-state.js?v=20261001-approved-1';
 import { GPUs, MODELS } from './data.js';
-import { recommend } from './recommend.js?v=references-connections-';
+import { recommend } from './recommend.js?v=20261001-approved-1';
 import { fitLabel, isTopTie } from './presentation.js';
 import { huggingFaceAnchor } from './model-links.js?v=20260929e';
 
@@ -427,4 +427,5 @@ window.addEventListener('hashchange', () => {
   const mode = new URLSearchParams(location.hash.slice(1)).get('j') || 'find';
   document.querySelector('[data-journey="' + (['find','improve','upgrade'].includes(mode) ? mode : 'find') + '"]')?.click();
 });
+
 
