@@ -16,7 +16,7 @@ for (const required of ['d', 't', 'p', 'c']) {
   assert.ok(writtenKeys.includes(required), `Shared setup should include ${required}`);
 }
 
-assert.match(app, /new URL\('\/', window\.location\.origin\)/, 'Shared setup links should use the canonical site root');
+assert.ok(app.includes('new URL("/", window.location.origin)'), 'Shared links must stay at the configured site root');
 assert.match(app, /url\.search = '';/);
 assert.match(app, /url\.hash = '';/);
 assert.match(app, /url\.hash = params\.toString\(\);/);

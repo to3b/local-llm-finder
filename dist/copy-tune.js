@@ -5,8 +5,9 @@ function enhancePriority() {
   const control = input?.closest('.priority-control');
   if (!input || !control) return;
 
-  if (!control.querySelector('.priority-steps')) {
-    const steps = document.createElement('div');
+  let steps = control.querySelector('.priority-steps');
+  if (!steps) {
+    steps = document.createElement('div');
     steps.className = 'priority-steps';
     steps.setAttribute('role', 'group');
     steps.setAttribute('aria-label', 'Speed versus quality priority');
@@ -14,16 +15,20 @@ function enhancePriority() {
       `<button type="button" class="priority-step" data-priority="${index + 1}" aria-pressed="false">${label}</button>`
     ).join('');
     control.append(steps);
+  }
 
+  if (!steps.dataset.priorityClick) {
     steps.addEventListener('click', event => {
       const button = event.target.closest('[data-priority]');
       if (!button) return;
       input.value = button.dataset.priority;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     });
+    steps.dataset.priorityClick = 'true';
   }
 
   control.classList.add('priority-enhanced');
+  input.tabIndex = -1;
   const sync = () => {
     const value = Number(input.value);
     for (const button of control.querySelectorAll('[data-priority]')) {
@@ -51,7 +56,7 @@ function enhanceSpeedFloor() {
   if (!field || !input || field.dataset.speedEnhanced) return;
   field.dataset.speedEnhanced = 'true';
 
-  if (input.value === '15' || input.value === '10' || !input.value) input.value = '1';
+  if (!input.value) input.value = '1';
   const label = field.querySelector('label');
   if (label) {
     label.textContent = 'Minimum speed';
@@ -70,6 +75,10 @@ function enhanceSpeedFloor() {
     ['30', '30 tok/s'],
     ['50', '50 tok/s']
   ].map(([value, text]) => `<option value="${value}">${text}</option>`).join('');
+  if (![...select.options].some(option => option.value === input.value)) {
+    const option = document.createElement('option');
+    option.value = input.value; option.textContent = input.value + ' tok/s'; select.append(option);
+  }
   select.value = input.value;
 
   input.hidden = true;
