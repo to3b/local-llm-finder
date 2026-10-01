@@ -1,6 +1,6 @@
 import { speedAvailability } from './ui-state.js?v=cleanup-1';
 import { GPUs, MODELS } from './data.js';
-import { recommend } from './recommend.js?v=20260929e';
+import { recommend } from './recommend.js?v=references-connections-';
 import { fitLabel, isTopTie } from './presentation.js';
 import { huggingFaceAnchor } from './model-links.js?v=20260929e';
 
@@ -215,7 +215,7 @@ function row(item, hardware, primaryUse, useCases, slower = false, extra = false
   const preferenceLabel = preferenceNames[Number(priorityInput.value) - 1] || 'Balanced';
   const whyTop = isTop ? `<span class="why-top-match"><strong>Why this match</strong><span>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${memoryContext} · ranks highest for ${preferenceLabel} priority</span></span>` : '';
   return `<details class="model-row ${unknown ? 'speed-unavailable ' : ''}${extra ? 'hidden-row ' : ''}${isTop ? 'top-choice' : ''}">
-    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">Top match for your settings</span>' : ''}<strong>${model.name}</strong><small>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span>${unknown ? '' : `<span class="metric speed"><span>${speedLabel}</span><strong>${speed}</strong></span>`}<span class="chevron" aria-hidden="true"></span>${whyTop}</summary>
+    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">Top match for your settings</span>' : ''}<strong>${model.name}</strong><span class="reference-slot" data-reference-id="${model.id}" hidden></span><small>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span>${unknown ? '' : `<span class="metric speed"><span>${speedLabel}</span><strong>${speed}</strong></span>`}<span class="chevron" aria-hidden="true"></span>${whyTop}</summary>
     <div class="model-details"><p>${why} ${speedText}</p><p class="estimate-context">Context used for this estimate: ${(Number(form.elements.context.value) * 1000).toLocaleString('en-US')} tokens.</p><div class="detail-grid"><div><span class="detail-label">Model context limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}<p class="model-links">${huggingFaceAnchor(model)}</p></div>
   </details>`;
 }
@@ -427,3 +427,4 @@ window.addEventListener('hashchange', () => {
   const mode = new URLSearchParams(location.hash.slice(1)).get('j') || 'find';
   document.querySelector('[data-journey="' + (['find','improve','upgrade'].includes(mode) ? mode : 'find') + '"]')?.click();
 });
+

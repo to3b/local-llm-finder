@@ -155,6 +155,7 @@ if (typeof window !== 'undefined' && typeof document !== 'undefined') {
   }
 
   queueMicrotask(() => {
-    import('./journeys.js?v=sandbox-59f8934e6261');
+    import('./journeys.js?v=references-connections-');
   });
 }
+
