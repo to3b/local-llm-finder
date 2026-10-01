@@ -1,3 +1,4 @@
+import { speedAvailability } from './ui-state.js?v=cleanup-1';
 import { GPUs, MODELS } from './data.js';
 import { recommend } from './recommend.js?v=20260929e';
 import { fitLabel, isTopTie } from './presentation.js';
@@ -111,7 +112,7 @@ function applyUrlState() {
 }
 
 function setupUrl() {
-  const url = new URL('/', window.location.origin);
+  const url = new URL("/", window.location.origin);
   url.search = '';
   url.hash = '';
   const params = new URLSearchParams();
@@ -207,12 +208,15 @@ function row(item, hardware, primaryUse, useCases, slower = false, extra = false
   const secondary = useCases.filter(key => key !== primaryUse);
   const useText = secondary.length ? `${taskNames[primaryUse]} first, with ${taskText(secondary)} as secondary needs` : taskNames[primaryUse];
   const why = `${fitLabel(quality)} fit for ${useText}. ${fit}`;
-  const speed = unknown ? 'Needs exact GPU' : `${speedLow}–${speedHigh} tok/s · rough`;
-  const speedLabel = unknown ? 'Speed estimate' : 'Speed estimate · rough';
+  const speed = unknown ? speedAvailability(hardware) : `${speedLow}–${speedHigh} tok/s`;
+  const speedLabel = 'Estimated speed';
   const speedText = unknown ? 'Exact-device speed is not estimated for this setup.' : slower ? `Estimated speed is below your ${fmt(hardware.minSpeed)} tokens/second minimum.` : `Estimated speed meets your ${fmt(hardware.minSpeed)} tokens/second minimum.`;
-  return `<details class="model-row ${extra ? 'hidden-row ' : ''}${isTop ? 'top-choice' : ''}">
-    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">#1 choice</span>' : ''}<strong>${model.name}</strong><small>${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : unknown ? ' · Speed not estimated' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span><span class="metric speed"><span>${speedLabel}</span><strong>${speed}</strong></span><span class="chevron" aria-hidden="true"></span></summary>
-    <div class="model-details"><p>${why} ${speedText}</p><div class="detail-grid"><div><span class="detail-label">Task fit</span><strong>${fitLabel(quality)}</strong></div><div><span class="detail-label">Text limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div><div><span class="detail-label">Memory</span><strong>${fmt(requiredGB)} GB estimated</strong></div><div><span class="detail-label">${speedLabel}</span><strong>${speed}</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}<p class="model-links">${huggingFaceAnchor(model)}</p></div>
+  const memoryContext = hardware.mode === 'gpu' ? `${fmt(requiredGB)} GB estimated with ${fmt(hardware.vramGB)} GB graphics memory` : hardware.mode === 'mac' ? `${fmt(requiredGB)} GB estimated with ${fmt(hardware.ramGB)} GB unified memory` : `${fmt(requiredGB)} GB estimated with ${fmt(hardware.ramGB)} GB RAM`;
+  const preferenceLabel = preferenceNames[Number(priorityInput.value) - 1] || 'Balanced';
+  const whyTop = isTop ? `<span class="why-top-match"><strong>Why this match</strong><span>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${memoryContext} · ranks highest for ${preferenceLabel} priority</span></span>` : '';
+  return `<details class="model-row ${unknown ? 'speed-unavailable ' : ''}${extra ? 'hidden-row ' : ''}${isTop ? 'top-choice' : ''}">
+    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">Top match for your settings</span>' : ''}<strong>${model.name}</strong><small>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span>${unknown ? '' : `<span class="metric speed"><span>${speedLabel}</span><strong>${speed}</strong></span>`}<span class="chevron" aria-hidden="true"></span>${whyTop}</summary>
+    <div class="model-details"><p>${why} ${speedText}</p><p class="estimate-context">Context used for this estimate: ${(Number(form.elements.context.value) * 1000).toLocaleString('en-US')} tokens.</p><div class="detail-grid"><div><span class="detail-label">Model context limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}<p class="model-links">${huggingFaceAnchor(model)}</p></div>
   </details>`;
 }
 
@@ -230,7 +234,7 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
   else subtitle.textContent = `${fmt(hardware.ramGB)} GB RAM · ${taskSummary}`;
 
   catalogState = data.catalog.length ? { items: data.catalog, hardware, primaryUse, useCases } : null;
-  let html = '';
+  let html = `<p class="speed-availability">${hardware.speedKnown ? 'Speed ranges are planning estimates, not benchmarks.' : speedAvailability(hardware) + '.'}</p>`;
   if (data.matches.length) {
     const top = data.matches[0];
     html += `<div class="match-list">${data.matches.map((item, i) => row(item, hardware, primaryUse, useCases, false, i >= 3, isTopTie(item, top))).join('')}</div>`;
@@ -238,7 +242,7 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
   } else {
     html += data.slower.length
       ? `<div class="empty-state"><strong>Nothing meets your speed minimum.</strong><p>Models that fit your other choices but fall below that speed are listed below.</p></div>`
-      : `<div class="empty-state"><strong>No model fits these choices.</strong><p>Try a shorter text limit, a looser Power User filter, or more available memory.</p></div>`;
+      : `<div class="empty-state"><strong>No model fits these choices.</strong><p>Try a shorter context, fewer model filters, or more available memory.</p></div>`;
   }
   if (data.catalog.length) html += `<details class="catalog"><summary>Browse all ${data.catalog.length} models that fit</summary><div class="catalog-body"><p>Includes the shortlist and models below your speed target.</p><label for="catalog-search">Search by model or family</label><input id="catalog-search" type="search" autocomplete="off" placeholder="e.g. Qwen, Gemma, Mistral"><p class="catalog-count" id="catalog-count" aria-live="polite">Open this section to load the catalogue.</p><div class="catalog-list"></div><p class="catalog-no-results" hidden>No model in this list matches your search.</p><button type="button" class="browse-more" hidden>Show more models</button></div></details>`;
   if (data.slower.length) html += `<section class="secondary"><h3 class="secondary-heading">Fits, but below your speed target</h3>${data.slower.map(item => row(item, hardware, primaryUse, useCases, true)).join('')}</section>`;
@@ -259,8 +263,9 @@ function filterCatalog() {
   const matches = catalogState.items.filter(item => `${item.model.name} ${item.model.family}`.toLocaleLowerCase().includes(query));
   const visible = matches.slice(0, catalogLimit);
   list.innerHTML = visible.map(item => row(item, catalogState.hardware, catalogState.primaryUse, catalogState.useCases, item.meetsSpeed === false)).join('');
-  results.querySelector('#catalog-count').textContent = `Showing ${visible.length} of ${matches.length} matching models`;
+  results.querySelector('#catalog-count').textContent = matches.length ? `Showing ${visible.length} of ${matches.length} matching models` : `No matches for “${search.value.trim()}”.`;
   results.querySelector('.catalog-no-results').hidden = matches.length !== 0;
+  results.querySelector('.catalog-no-results').textContent = 'Clear the search or try another model or family.';
   const more = results.querySelector('.browse-more');
   more.hidden = matches.length <= catalogLimit;
   more.textContent = `Show ${Math.min(8, matches.length - catalogLimit)} more models`;
@@ -322,7 +327,7 @@ function update() {
   }
 
   try {
-    const hardware = { mode, vramGB, ramGB, bandwidthGBs, deviceName, speedKnown, minSpeed };
+    const hardware = { mode, vramGB, ramGB, bandwidthGBs, deviceName, speedKnown, minSpeed, customMemory: !!custom };
     const settings = { quantization, maxWeightsGB, family };
     const data = recommend({
       hardware,
@@ -403,3 +408,22 @@ results.addEventListener('input', event => {
 });
 
 update();
+// Same-document links and browser Back/Forward must restore the shared controls too.
+window.addEventListener('hashchange', () => {
+  form.reset(); gpuInput.value = ''; vramInput.value = '';
+  gpuSearch.hidden = true; gpuSearchToggle.setAttribute('aria-expanded', 'false');
+  gpuSearchToggle.textContent = 'Search by card name';
+  applyUrlState(); syncSecondaryTasks();
+  lastMode = form.elements.device.value;
+  const speedChoice = document.querySelector('#speed-choice');
+  if (speedChoice) {
+    const value = form.elements.speed.value;
+    if (![...speedChoice.options].some(option => option.value === value)) {
+      const option = document.createElement('option'); option.value = value; option.textContent = value + ' tok/s'; speedChoice.append(option);
+    }
+    speedChoice.value = value;
+  }
+  priorityInput.dispatchEvent(new Event('input', {bubbles:true}));
+  const mode = new URLSearchParams(location.hash.slice(1)).get('j') || 'find';
+  document.querySelector('[data-journey="' + (['find','improve','upgrade'].includes(mode) ? mode : 'find') + '"]')?.click();
+});

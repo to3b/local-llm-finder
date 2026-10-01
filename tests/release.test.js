@@ -73,7 +73,7 @@ const example = recommend({
 assert.ok(example.matches.length >= 3, 'Homepage worked example requires three current matches');
 const fmt = value => Number.isInteger(value) ? String(value) : value.toFixed(1);
 for (const [rank, item] of example.matches.slice(0, 3).entries()) {
-  const expected = `<article><span class="step-number">#${rank + 1}</span><h3>${item.model.name}</h3><p>${item.quant.name} · ${fmt(item.requiredGB)} GB estimated memory · ${item.speedLow}–${item.speedHigh} tok/s rough speed · ${fitLabel(item.quality)} coding fit.</p></article>`;
+  const expected = `<tr><td>${rank + 1}</td><th scope="row">${item.model.name}</th><td>${item.quant.name}</td><td>${fmt(item.requiredGB)} GB</td><td>${item.speedLow}–${item.speedHigh} tok/s</td></tr>`;
   for (const name of ['index', 'distIndex']) {
     assert.ok(files[name].includes(expected), `${name} worked example #${rank + 1} must match the current recommendation engine`);
   }
@@ -82,8 +82,8 @@ for (const [rank, item] of example.matches.slice(0, 3).entries()) {
 assert.ok(files.journeys.includes(`document.title = '${homepageTitle}'`), 'journey UI must preserve the source title');
 assert.ok(files.journeys.includes(`textContent = '${homepageHeading}'`), 'journey UI must preserve the source H1');
 assert.ok(files.copyTune.includes(`heading.textContent = '${homepageHeading}'`), 'copy tuning must preserve the source H1');
-assert.match(files.app, /new URL\('\/', window\.location\.origin\)/, 'shared setup links must use the canonical root URL');
-assert.match(files.journeys, /new URL\('\/', location\.origin\)/, 'journey hashes must use the canonical root URL');
+assert.ok(files.app.includes('new URL("/", window.location.origin)'), 'Share links must use the configured site root');
+assert.ok(files.journeys.includes('new URL("/", location.origin)'), 'Journey links must use the configured site root');
 
 assert.match(files.methodology, /<link rel="canonical" href="https:\/\/localllmfinder\.com\/dist\/methodology\.html">/);
 assert.match(files.privacy, /<link rel="canonical" href="https:\/\/localllmfinder\.com\/dist\/privacy\.html">/);
