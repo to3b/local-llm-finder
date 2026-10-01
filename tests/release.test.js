@@ -14,6 +14,7 @@ const files = Object.fromEntries(await Promise.all([
   ['docsCss', 'dist/docs.css'],
   ['app', 'dist/app.js'],
   ['journeys', 'dist/journeys.js'],
+  ['recommendModule', 'dist/recommend.js'],
   ['copyTune', 'dist/copy-tune.js'],
   ['robots', 'robots.txt'],
   ['sitemap', 'sitemap.xml'],
@@ -45,6 +46,17 @@ for (const name of ['index', 'distIndex']) {
   assert.ok(files[name].includes('class="homepage-trust"'), `${name} must keep the compact trust note`);
   assert.ok(!files[name].includes('How the finder works'), `${name} should not reintroduce the removed filler explainer`);
   assert.ok(!files[name].includes('Local LLM basics'), `${name} should not reintroduce the removed homepage FAQ`);
+}
+
+// Preloads and runtime imports must identify the same release modules.
+const recommendImport = files.app.match(/from '(\.\/recommend\.js\?v=[^']+)'/)[1];
+const journeyImport = files.recommendModule.match(/import\('(\.\/journeys\.js\?v=[^']+)'\)/)[1];
+assert.ok(files.journeys.includes(`from '${recommendImport}'`), 'recommendation module must be shared by Finder and journeys');
+for (const name of ['index', 'distIndex']) {
+  const appScript = files[name].match(/<script type="module" src="([^"]*app\.js\?v=[^"]+)"/)[1];
+  for (const url of [appScript, recommendImport, journeyImport]) {
+    assert.ok(files[name].includes(`<link rel="modulepreload" href="${url}">`), `${name} must preload the exact runtime module URL: ${url}`);
+  }
 }
 
 assert.match(files.knowledge, /<meta name="robots" content="noindex,follow">/, 'Knowledge preview must stay out of search until substantive pages launch');
@@ -92,3 +104,4 @@ for (const [name, content] of Object.entries(files)) {
 }
 
 console.log('V1 custom-domain, homepage SEO, compact support content, Knowledge subdomain link, shared static-page design, Knowledge preview checks passed.');
+
