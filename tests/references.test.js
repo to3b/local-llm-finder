@@ -5,4 +5,7 @@ assert.equal(validateReferences({version:1,articles:[a]}).get('Model:model-11').
 assert.throws(()=>validateReferences({version:1,articles:[{...a,url:'javascript:alert(1)'}]}));
 assert.throws(()=>validateReferences({version:1,articles:[a,a]}));
 assert.equal(validateReferences({version:1,articles:[]}).size,0);
-console.log('Reference URL validation, ID mapping and unavailable references passed.');
+const dotted={...a,entityIds:['extra-glm-4.5-air'],status:'Draft'};
+assert.equal(validateReferences({version:1,articles:[dotted]}).get('Model:extra-glm-4.5-air').status,'Draft');
+for(const id of ['../escape','model"-7','extra..model','-model-7'])assert.throws(()=>validateReferences({version:1,articles:[{...a,entityIds:[id]}]}));
+console.log('Reference URL validation, exact dotted catalogue IDs, draft mapping and unavailable references passed.');
