@@ -34,7 +34,7 @@ assert.match(files.index, /<base href="\.\/dist\/">/);
 for (const name of ['index', 'distIndex']) {
   assert.ok(files[name].includes(`<title>${homepageTitle}</title>`), `${name} must use the deliberate homepage title`);
   assert.ok(files[name].includes(`<h1 id="page-heading">${homepageHeading}</h1>`), `${name} must expose the hardware-intent H1 in source HTML`);
-  assert.ok(files[name].includes('What fits an RTX 3060 12 GB for coding?'), `${name} must include the static worked example`);
+  assert.ok(!files[name].includes('example-heading'), `${name} must omit the removed worked example`);
   assert.match(files[name], /id="speed-input"[^>]+value="1"/, `${name} must default to no hard speed floor`);
   assert.match(files[name], /id="priority-input"[^>]+min="1"[^>]+max="5"[^>]+step="1"/, `${name} must keep the five-step speed/quality slider`);
   assert.ok(files[name].includes('id="advanced-settings"'), `${name} must keep Advanced settings`);
@@ -60,24 +60,6 @@ for (const name of ['knowledge', 'methodology', 'privacy', 'terms']) {
 assert.ok(files.docsCss.includes('.docs-shell'), 'shared static-page stylesheet must define the document shell');
 assert.ok(files.docsCss.includes('.doc-hero'), 'shared static-page stylesheet must define the document hero');
 assert.ok(files.docsCss.includes('.site-topbar'), 'shared static-page stylesheet must define the site header');
-
-// Keep the crawlable worked example tied to the same engine/data that powers the UI.
-// This catches stale homepage copy whenever a calibration or ranking change alters it.
-const exampleGpu = GPUs.find(gpu => gpu.id === 'rtx-3060');
-assert.ok(exampleGpu, 'RTX 3060 profile must exist for the homepage example');
-const example = recommend({
-  hardware: { mode: 'gpu', vramGB: 12, ramGB: 32, bandwidthGBs: exampleGpu.bandwidthGBs, speedKnown: true },
-  useCases: ['coding'], primaryUse: 'coding', preference: 3, minSpeed: 1, contextK: 8,
-  quantization: 'auto', maxWeightsGB: null, family: null
-});
-assert.ok(example.matches.length >= 3, 'Homepage worked example requires three current matches');
-const fmt = value => Number.isInteger(value) ? String(value) : value.toFixed(1);
-for (const [rank, item] of example.matches.slice(0, 3).entries()) {
-  const expected = `<tr><td>${rank + 1}</td><th scope="row">${item.model.name}</th><td>${item.quant.name}</td><td>${fmt(item.requiredGB)} GB</td><td>${item.speedLow}–${item.speedHigh} tok/s</td></tr>`;
-  for (const name of ['index', 'distIndex']) {
-    assert.ok(files[name].includes(expected), `${name} worked example #${rank + 1} must match the current recommendation engine`);
-  }
-}
 
 assert.ok(files.journeys.includes(`document.title = '${homepageTitle}'`), 'journey UI must preserve the source title');
 assert.ok(files.journeys.includes(`textContent = '${homepageHeading}'`), 'journey UI must preserve the source H1');
@@ -109,4 +91,4 @@ for (const [name, content] of Object.entries(files)) {
   }
 }
 
-console.log('V1 custom-domain, homepage SEO, compact support content, Knowledge subdomain link, shared static-page design, Knowledge preview and worked-example checks passed.');
+console.log('V1 custom-domain, homepage SEO, compact support content, Knowledge subdomain link, shared static-page design, Knowledge preview checks passed.');
