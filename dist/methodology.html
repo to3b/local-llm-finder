@@ -4,9 +4,12 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="index,follow">
-  <meta name="description" content="How Local LLM Finder estimates memory, task fit and speed.">
+  <meta name="description" content="How Local LLM Finder estimates VRAM, RAM, context memory and GPU speed, ranks model task fit, and reviews submitted performance tests.">
   <link rel="canonical" href="https://localllmfinder.com/dist/methodology.html">
-  <title>Methodology — Local LLM Finder</title>
+  <title>LLM Memory &amp; Speed Estimates | Local LLM Finder</title>
+  <meta property="og:type" content="website"><meta property="og:site_name" content="Local LLM Finder">
+  <meta property="og:title" content="LLM Memory &amp; Speed Estimates | Local LLM Finder"><meta property="og:description" content="How Local LLM Finder estimates VRAM, RAM, context memory and GPU speed, ranks model task fit, and reviews submitted performance tests."><meta property="og:url" content="https://localllmfinder.com/dist/methodology.html">
+  <meta name="twitter:card" content="summary">
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css?v=20260929d">
   <link rel="stylesheet" href="./docs.css?v=20260929a">
@@ -27,7 +30,7 @@
       <p class="eyebrow">Methodology</p>
       <h1 id="page-heading">How the finder makes its estimates</h1>
       <p class="doc-lede">The Finder is a planning tool. It combines estimated memory fit, workload-oriented ranking inputs and rough speed modelling to help narrow a local-model shortlist.</p>
-      <div class="doc-meta"><span>Last updated 28 September 2026</span><span class="doc-chip">Estimates, not benchmarks</span></div>
+      <div class="doc-meta"><span>Last updated <time datetime="2026-10-02">2 October 2026</time></span><span class="doc-chip">Estimates, not benchmarks</span></div>
       <div class="doc-summary-grid" aria-label="Methodology overview">
         <article class="doc-summary-card"><small>01 · Fit</small><strong>Memory first</strong><p>Weights, runtime, context and reserve memory are checked against the selected budget.</p></article>
         <article class="doc-summary-card"><small>02 · Rank</small><strong>Workload-aware</strong><p>Task fit is combined with the selected speed-versus-quality priority.</p></article>
@@ -36,13 +39,14 @@
     </section>
 
     <article class="doc-body">
-      <section class="doc-section"><h2>Memory fit</h2><p>The finder starts with an estimated quantized model-weight size, adds runtime and context memory, and leaves a small reserve. A result is treated as fitting only when that total stays within the selected planning budget.</p></section>
+      <section class="doc-section"><h2>Memory fit</h2><p>The finder starts with an estimated quantized model-weight size, adds runtime and context memory, and leaves a small reserve. A result is treated as fitting only when that total stays within the selected planning budget. See <a href="https://knowledge.localllmfinder.com/guides/q4-vs-q5/">Q4 vs Q5</a> and <a href="https://knowledge.localllmfinder.com/guides/context-length/">how context length affects memory</a>.</p></section>
       <section class="doc-section"><h2>Mac and RAM-only estimates</h2><p>For Mac and “not sure” modes, the tool reserves part of system memory for the operating system and uses the remainder as a model-memory planning budget. Exact Mac-chip speed is not estimated in V1, so Mac recommendations are capacity/ranking estimates rather than device-specific performance predictions.</p></section>
       <section class="doc-section"><h2>Task fit</h2><p>Internal task scores are prototype ranking inputs, not standard benchmark results. The main use receives 65% of task weighting and selected secondary uses share the remaining 35%. To avoid implying benchmark-level precision, the public interface converts those internal values into broad labels such as Good, Strong and Very strong.</p></section>
       <section class="doc-section"><h2>Ranking and #1 choices</h2><p>Recommendations combine task fit with the selected speed-versus-quality priority. Balanced trades both factors; Stronger and especially Strongest make task fit dominant, with speed acting mainly as a tie-break unless you set a minimum. A #1 result is based on the recommendation engine’s rank rather than a visual comparison of rendered values. Multiple models can share the #1 treatment only when their ranking scores are effectively tied and their internal task-fit inputs are within a narrow tolerance.</p></section>
       <section class="doc-section"><h2>Speed</h2><p>When a known graphics card is selected, the tool produces a rough tokens-per-second range using memory bandwidth and model-size assumptions. MoE profiles can include an active-weight hint, but the estimate is capped because attention, routing, shared layers and runtime overhead still cost time. Speed affects ranking, but V1 does not silently impose a minimum. Advanced users can optionally set a hard minimum speed, which moves estimates below that threshold out of the main shortlist. These figures are planning estimates, not measured benchmarks.</p></section>
       <section class="doc-section"><h2>Advanced model filters</h2><p>Power-user controls can restrict the catalogue by quantization, model family, maximum estimated model-weight size or manual memory budget. These filters narrow the candidates; they do not make a model more compatible.</p></section>
       <section class="doc-section"><h2>Sources and model links</h2><p>The catalogue includes more than 130 model profiles and more than 135 GPU profiles. Common recommendations have curated links to publisher Hugging Face repositories. When an official repository has not been verified, the site links to a Hugging Face search instead of guessing a community upload. Model publishers remain the authoritative source for release details, licences, native context and runtime requirements.</p></section>
+      <section class="doc-section" id="editorial-process"><h2>How references and reports are prepared</h2><p>Local LLM Finder uses AI assistance to draft and organise reference articles. Published pages cite publisher or runtime documentation. Hardware guidance remains a planning estimate unless a measured result is clearly identified. Drafts stay outside the public article index.</p><p>You can <a href="/tests/">share a test</a> with your hardware, model and settings. Reports are reviewed before publication or use in estimates; submitting one does not immediately change recommendations. <a href="https://github.com/to3b/local-llm-finder/issues/new/choose">Report a correction</a>.</p></section>
       <section class="doc-section"><h2>What should improve next</h2><p>The highest-value V1.x data work is to replace prototype capability and performance inputs with sourced records that include publisher URL, release date, measurement hardware, runtime, quantization, context, source date and confidence.</p></section>
       <div class="doc-actions"><a class="doc-button primary" href="/">Use the Finder</a><a class="doc-button secondary" href="https://knowledge.localllmfinder.com/">Knowledge</a></div>
     </article>

@@ -1,3 +1,9 @@
 .reference-slot{display:block;font-size:.875rem;font-weight:400;margin-top:6px}.reference-slot:empty,.reference-slot[hidden]{display:none}
 .reference-slot a,.hardware-reference a{color:var(--accent,#9cbfff);text-decoration:underline;text-underline-offset:3px}
 .hardware-reference{margin:12px 0 0;font-size:.875rem}.hardware-reference[hidden]{display:none}
+
+.knowledge-reads{margin-top:14px;padding-top:10px;border-top:1px solid var(--line);font-size:.875rem;color:var(--muted)}
+.knowledge-reads summary{padding:8px 0;cursor:pointer;color:var(--text)}
+.knowledge-reads ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 22px;list-style:none;padding:0;margin:10px 0}
+.knowledge-reads a{display:block;padding:5px 0;color:var(--accent,#9cbfff);line-height:1.5;text-underline-offset:3px}
+@media(max-width:650px){.knowledge-reads ul{grid-template-columns:1fr}}

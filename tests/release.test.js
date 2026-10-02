@@ -60,7 +60,7 @@ for (const name of ['index', 'distIndex']) {
 }
 
 assert.match(files.knowledge, /<meta name="robots" content="noindex,follow">/, 'Knowledge preview must stay out of search until substantive pages launch');
-assert.match(files.knowledge, /<link rel="canonical" href="https:\/\/localllmfinder\.com\/knowledge\.html">/);
+assert.match(files.knowledge, /<link rel="canonical" href="https:\/\/knowledge\.localllmfinder\.com\/">/, 'Retired preview must identify the destination Knowledge site');
 assert.ok(files.knowledge.includes('Pages will be published when they have enough useful information to stand on their own.'), 'Knowledge preview must explain the staged publishing approach');
 assert.ok(files.knowledge.includes('href="/"'), 'Knowledge preview must link back to the Finder');
 
@@ -104,4 +104,3 @@ for (const [name, content] of Object.entries(files)) {
 }
 
 console.log('V1 custom-domain, homepage SEO, compact support content, Knowledge subdomain link, shared static-page design, Knowledge preview checks passed.');
-
