@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const app = await readFile('dist/app.js', 'utf8');
+const restoration = [app,await readFile('dist/journeys.js','utf8'),await readFile('dist/model-prefill.js','utf8')].join('\n');
 
 // Shared setups deliberately use a URL hash so GitHub Pages serves the same static
 // document while the browser restores state locally. Keep every written key readable.
 const writtenKeys = [...app.matchAll(/params\.set\('([^']+)'/g)].map(match => match[1]);
-const readKeys = new Set([...app.matchAll(/params\.(?:get|has)\('([^']+)'/g)].map(match => match[1]));
+// Journey and model selection are restored by their own UI modules.
+const readKeys = new Set([...restoration.matchAll(/\.(?:get|has)\('([^']+)'/g)].map(match => match[1]));
 
 for (const key of writtenKeys) {
   assert.ok(readKeys.has(key), `Shared-state key ${key} is written but never restored`);

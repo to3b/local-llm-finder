@@ -134,6 +134,13 @@ function setupUrl() {
   if (form.elements.maxWeights.value) params.set('z', form.elements.maxWeights.value);
   if (form.elements.family.value) params.set('f', form.elements.family.value);
   if (vramInput.value.trim()) params.set('o', vramInput.value.trim());
+  const journey=document.querySelector('[data-journey][aria-selected="true"]')?.dataset.journey;
+  if(['improve','upgrade'].includes(journey)) params.set('j',journey);
+  const current=MODELS.find(m=>m.name===document.querySelector('#current-model')?.value);
+  if(journey==='improve' && current){
+    params.set('model',current.id);
+    params.set('cq',document.querySelector('#current-quant').value);
+  }
   url.hash = params.toString();
   return url.toString();
 }
@@ -427,5 +434,4 @@ window.addEventListener('hashchange', () => {
   const mode = new URLSearchParams(location.hash.slice(1)).get('j') || 'find';
   document.querySelector('[data-journey="' + (['find','improve','upgrade'].includes(mode) ? mode : 'find') + '"]')?.click();
 });
-
 

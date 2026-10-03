@@ -3,6 +3,7 @@ import { GPUs, MODELS } from './data.js';
 import { recommend } from './recommend.js?v=20261001-approved-1';
 import { fitLabel, fitDelta } from './presentation.js';
 import { huggingFaceAnchor } from './model-links.js?v=20260929e';
+import {modelPrefill} from './model-prefill.js';
 
 const form = document.querySelector('#finder-form');
 const findView = document.querySelector('#results');
@@ -43,6 +44,11 @@ const currentQuant = document.querySelector('#current-quant');
 const buttons = [...document.querySelectorAll('[data-journey]')];
 const modelList = document.querySelector('#current-model-list');
 modelList.replaceChildren(...[...MODELS].sort((a,b) => a.name.localeCompare(b.name)).map(model => { const o = document.createElement('option'); o.value = model.name; return o; }));
+function applyModelPrefill(){
+  const selection=modelPrefill(location.hash,MODELS);
+  if(selection){currentInput.value=selection.model.name;currentQuant.value=selection.quant;}
+}
+applyModelPrefill();
 let active = 'find';
 
 function gpu() {
@@ -209,6 +215,6 @@ buttons.forEach((b, index) => {
 });
 form.addEventListener('input', schedule);
 currentInput.addEventListener('input', schedule); currentQuant.addEventListener('input', schedule);
+window.addEventListener('hashchange',()=>{applyModelPrefill();activate(new URLSearchParams(location.hash.slice(1)).get('j') || 'find',false);});
 activate(new URLSearchParams(location.hash.slice(1)).get('j') || 'find', false);
-
 
