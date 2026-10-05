@@ -7,9 +7,9 @@ import '../dist/catalog-extra.js';
 const medium = MODELS.find(model => model.name === 'Mistral Medium 3.5 128B');
 const devstral = MODELS.find(model => model.name === 'Devstral 2 123B');
 assert.ok(medium && devstral);
-assert.equal(medium.quality.coding, MODEL_CALIBRATIONS[medium.name].quality.coding);
-assert.ok(medium.quality.coding >= devstral.quality.coding, 'Sourced calibration should not rank Devstral 2 above Medium 3.5 for coding');
-assert.ok(medium.calibration?.source?.startsWith('https://'));
+assert.equal(medium.quality.coding, 97, 'Keep the underlying editorial prototype score');
+assert.equal(MODEL_CALIBRATIONS[medium.name], undefined, 'A publisher supersession claim is not a cross-model calibration');
+assert.equal(medium.calibration, undefined);
 
 const quantCalibrations = {
   'Llama 3.1 8B Instruct': [4.92, 5.73],

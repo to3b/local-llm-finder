@@ -62,7 +62,7 @@ for (const scenario of scenarios) {
   lines.push(`\n${scenario.name}`);
   top.forEach((item, i) => {
     const speed = scenario.hardware.speedKnown ? `${item.speedLow}–${item.speedHigh} tok/s` : 'speed unknown';
-    lines.push(`  ${i + 1}. ${item.model.name} · ${item.quant.name} · ${item.requiredGB.toFixed(1)} GB · ${speed} · fit ${item.quality.toFixed(1)} · rank ${item.rank.toFixed(3)}`);
+    lines.push(`  ${i + 1}. ${item.model.name} · ${item.quant.name} · ${item.requiredGiB.toFixed(1)} GiB · ${speed} · fit ${item.quality.toFixed(1)} · rank ${item.rank.toFixed(3)}`);
   });
 
   if (scenario.hardware.speedKnown) {

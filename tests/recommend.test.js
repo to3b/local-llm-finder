@@ -48,7 +48,7 @@ assert.ok(tooFast.slower.length > 0);
 
 const combined = run({ useCases: ['coding', 'reasoning'], preference: 5 });
 assert.ok(combined.matches.length > 0);
-assert.notEqual(combined.matches[0].quality, quality.matches[0].quality);
+assert.notEqual(combined.catalog.find(x => x.model.id === 'model-11').quality, quality.catalog.find(x => x.model.id === 'model-11').quality, 'The same Coder must reflect both requested tasks, even if a different top model has equal rounded scores');
 
 const macLike = run({ vramGB: 11, bandwidthGBs: 180, ramGB: 16, useCases: ['chat'] });
 const unknown = run({ mode: 'unsure', speedKnown: false, vramGB: 11, bandwidthGBs: 90, ramGB: 16, useCases: ['chat'] });

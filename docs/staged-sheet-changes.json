@@ -1,0 +1,481 @@
+{
+  "reviewDate": "2026-10-05",
+  "status": "sandbox-only; production Sheet unchanged",
+  "spreadsheetId": "1IQvICIAWzzbTO_hTJMb-HxEYzyDQQmtvGXgY-np9Cbg",
+  "sourceCommit": "009eb83b5ade37bdd4b8a5ef6fd1ed43b5c6e982",
+  "changes": [
+    {
+      "tab": "Models",
+      "range": "S1:V1",
+      "previous": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "values": [
+        "Cache Type",
+        "Memory Source",
+        "Native Context Tokens",
+        "Memory Reviewed At"
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "H4:I4",
+      "model": "Qwen3 1.7B",
+      "previous": [
+        64,
+        0.024
+      ],
+      "values": [
+        32,
+        0.114688
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "S4:V4",
+      "model": "Qwen3 1.7B",
+      "previous": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "values": [
+        "f16",
+        "https://huggingface.co/Qwen/Qwen3-1.7B/blob/main/config.json",
+        32768,
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "H7:I7",
+      "model": "Qwen3 4B",
+      "previous": [
+        64,
+        0.038
+      ],
+      "values": [
+        32,
+        0.147456
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "S7:V7",
+      "model": "Qwen3 4B",
+      "previous": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "values": [
+        "f16",
+        "https://huggingface.co/Qwen/Qwen3-4B/blob/main/config.json",
+        32768,
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "H8:I8",
+      "model": "Qwen3 8B",
+      "previous": [
+        64,
+        0.055
+      ],
+      "values": [
+        32,
+        0.147456
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "S8:V8",
+      "model": "Qwen3 8B",
+      "previous": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "values": [
+        "f16",
+        "https://huggingface.co/Qwen/Qwen3-8B/blob/main/config.json",
+        32768,
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "H9:I9",
+      "model": "Qwen3 14B",
+      "previous": [
+        64,
+        0.082
+      ],
+      "values": [
+        32,
+        0.16384
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "S9:V9",
+      "model": "Qwen3 14B",
+      "previous": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "values": [
+        "f16",
+        "https://huggingface.co/Qwen/Qwen3-14B/blob/main/config.json",
+        32768,
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "H10:I10",
+      "model": "Qwen3 32B",
+      "previous": [
+        64,
+        0.135
+      ],
+      "values": [
+        32,
+        0.262144
+      ]
+    },
+    {
+      "tab": "Models",
+      "range": "S10:V10",
+      "model": "Qwen3 32B",
+      "previous": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "values": [
+        "f16",
+        "https://huggingface.co/Qwen/Qwen3-32B/blob/main/config.json",
+        32768,
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Quant Calibrations",
+      "range": "G2",
+      "model": "Mistral Medium 3.5 128B",
+      "previous": 100,
+      "value": ""
+    },
+    {
+      "tab": "Quant Calibrations",
+      "range": "N2",
+      "previous": "OK",
+      "value": "Hold"
+    },
+    {
+      "tab": "Quant Calibrations",
+      "range": "M2",
+      "previous": "Mistral states Medium 3.5 supersedes its previous coding models and replaces Devstral 2 in Vibe.",
+      "value": "Reference only: publisher benchmark claims do not establish a cross-model maximum coding score. Keep the underlying editorial prototype score."
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "F2",
+      "slug": "qwen3-8b",
+      "previous": "## Which checkpoint should I download?\n\nUse **Qwen/Qwen3-8B** and the publisher’s GGUF files. This checkpoint supports thinking and non-thinking modes. Keep that mode fixed when comparing results; thinking output uses tokens and time before the final answer.\n\n## Can I use its full context window?\n\nQwen lists 32,768 native tokens and up to 131,072 with YaRN. Extended context needs explicit runtime support and more memory. The Finder’s 64K planning limit does not verify YaRN support. See [[guides/context-length|context length]].\n\n## What if it loads but runs out of memory?\n\nClose other GPU workloads and reduce context. If needed, use a smaller file or partial CPU offload. For Macs or CPU-only setups, select the appropriate mode in the Finder; installed RAM is not dedicated VRAM.",
+      "values": [
+        "## Which checkpoint should I download?\n\nUse **Qwen/Qwen3-8B** and the publisher’s GGUF files. This checkpoint supports thinking and non-thinking modes. Keep that mode fixed when comparing results; thinking output uses tokens and time before the final answer.\n\n## Can I use its full context window?\n\nQwen lists 32,768 native tokens and up to 131,072 with YaRN. Extended context needs explicit runtime support and more memory. The Finder uses a 32,000-token default planning ceiling for this native profile. Longer contexts need a separately configured runtime. See [[guides/context-length|context length]].\n\n## What if it loads but runs out of memory?\n\nClose other GPU workloads and reduce context. If needed, use a smaller file or partial CPU offload. For Macs or CPU-only setups, select the appropriate mode in the Finder; installed RAM is not dedicated VRAM."
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K2",
+      "slug": "qwen3-8b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "N2",
+      "slug": "qwen3-8b",
+      "previous": "https://huggingface.co/Qwen/Qwen3-8B\nhttps://huggingface.co/Qwen/Qwen3-8B-GGUF/tree/main\nhttps://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md",
+      "values": [
+        "https://huggingface.co/Qwen/Qwen3-8B\nhttps://huggingface.co/Qwen/Qwen3-8B-GGUF/tree/main\nhttps://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md\nhttps://huggingface.co/Qwen/Qwen3-8B/blob/main/config.json\nhttps://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "O2",
+      "slug": "qwen3-8b",
+      "previous": "Published at user request after primary-source review, six-page article build, relationship/backlink checks, Finder regression tests and sandbox browser checks at 360/390/768/1280 px. Checked 2026-10-01. Hardware guidance is planning, not measured benchmarks.",
+      "values": [
+        "Published at user request after primary-source review, six-page article build, relationship/backlink checks, Finder regression tests and sandbox browser checks at 360/390/768/1280 px. Checked 2026-10-01. Hardware guidance is planning, not measured benchmarks. Memory profile review: 2026-10-05; publisher architecture and default FP16 K/V cache, calculated rather than benchmarked."
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K3",
+      "slug": "qwen2-5-coder-14b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K4",
+      "slug": "gpt-oss-20b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K5",
+      "slug": "rtx-3060-12gb",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K12",
+      "slug": "llama-3-2-3b-instruct",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K13",
+      "slug": "qwen3-4b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "N13",
+      "slug": "qwen3-4b",
+      "previous": "https://huggingface.co/Qwen/Qwen3-4B\nhttps://huggingface.co/Qwen/Qwen3-4B-GGUF/tree/main\nhttps://huggingface.co/Qwen/Qwen3-4B/blob/main/config.json",
+      "values": [
+        "https://huggingface.co/Qwen/Qwen3-4B\nhttps://huggingface.co/Qwen/Qwen3-4B-GGUF/tree/main\nhttps://huggingface.co/Qwen/Qwen3-4B/blob/main/config.json\nhttps://huggingface.co/Qwen/Qwen3-4B/blob/main/config.json\nhttps://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "O13",
+      "slug": "qwen3-4b",
+      "previous": "Primary sources reviewed 2026-10-02. Download sizes are rounded decimal GB; cache calculations assume one conversation and FP16 K/V. Page build, metadata, reference links and form-prefill checks passed. No local hardware benchmarks performed.",
+      "values": [
+        "Primary sources reviewed 2026-10-02. Download sizes are rounded decimal GB; cache calculations assume one conversation and FP16 K/V. Page build, metadata, reference links and form-prefill checks passed. No local hardware benchmarks performed. Memory profile review: 2026-10-05; publisher architecture and default FP16 K/V cache, calculated rather than benchmarked."
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K14",
+      "slug": "qwen3-14b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "N14",
+      "slug": "qwen3-14b",
+      "previous": "https://huggingface.co/Qwen/Qwen3-14B\nhttps://huggingface.co/Qwen/Qwen3-14B-GGUF/tree/main\nhttps://huggingface.co/Qwen/Qwen3-14B/blob/main/config.json",
+      "values": [
+        "https://huggingface.co/Qwen/Qwen3-14B\nhttps://huggingface.co/Qwen/Qwen3-14B-GGUF/tree/main\nhttps://huggingface.co/Qwen/Qwen3-14B/blob/main/config.json\nhttps://huggingface.co/Qwen/Qwen3-14B/blob/main/config.json\nhttps://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "O14",
+      "slug": "qwen3-14b",
+      "previous": "Primary sources reviewed 2026-10-02. Download sizes are rounded decimal GB; cache calculations assume one conversation and FP16 K/V. Page build, metadata, reference links and form-prefill checks passed. No local hardware benchmarks performed.",
+      "values": [
+        "Primary sources reviewed 2026-10-02. Download sizes are rounded decimal GB; cache calculations assume one conversation and FP16 K/V. Page build, metadata, reference links and form-prefill checks passed. No local hardware benchmarks performed. Memory profile review: 2026-10-05; publisher architecture and default FP16 K/V cache, calculated rather than benchmarked."
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K15",
+      "slug": "qwen3-32b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "N15",
+      "slug": "qwen3-32b",
+      "previous": "https://huggingface.co/Qwen/Qwen3-32B\nhttps://huggingface.co/Qwen/Qwen3-32B-GGUF",
+      "values": [
+        "https://huggingface.co/Qwen/Qwen3-32B\nhttps://huggingface.co/Qwen/Qwen3-32B-GGUF\nhttps://huggingface.co/Qwen/Qwen3-32B/blob/main/config.json\nhttps://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "O15",
+      "slug": "qwen3-32b",
+      "previous": "Source review: 2026-10-03. Published after the owner approved the checked sandbox batch on 3 October 2026. Shared Finder calculations and publication checks passed. Planning estimates only; no independently reproduced hardware benchmarks.",
+      "values": [
+        "Source review: 2026-10-03. Published after the owner approved the checked sandbox batch on 3 October 2026. Shared Finder calculations and publication checks passed. Planning estimates only; no independently reproduced hardware benchmarks. Memory profile review: 2026-10-05; publisher architecture and default FP16 K/V cache, calculated rather than benchmarked."
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K16",
+      "slug": "qwen2-5-coder-7b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K17",
+      "slug": "qwen2-5-coder-32b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K21",
+      "slug": "gemma-3-12b",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K27",
+      "slug": "phi-4-mini-instruct",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K100",
+      "slug": "qwen3-coder-30b-a3b-instruct",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K146",
+      "slug": "rtx-4060-ti-16",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K150",
+      "slug": "rtx-4090",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K151",
+      "slug": "rtx-5090",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K155",
+      "slug": "rtx-6000-ada",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K160",
+      "slug": "rx-7900-xtx",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K162",
+      "slug": "arc-b580",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K174",
+      "slug": "rtx-2060",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "F186",
+      "slug": "rtx-3080-10",
+      "previous": "## Why does the exact RTX 3080 variant matter?\n\nNVIDIA lists **10 GB and 12 GB RTX 3080 variants**. This page uses 10 GB. A recommendation calculated for the 12 GB version can exceed this card’s budget; select the exact model in the Finder.\n\n## Should I try a 14B model?\n\nAt the Q4 and 4K settings shown, the reviewed 14B profiles exceed this full-GPU budget. Start with the listed smaller models. More GPU compute does not make weights and cache fit into less VRAM.\n\n## Can I increase Q4 to Q5?\n\nCheck the exact model’s Q5 profile in the Finder first, keeping context fixed. It uses more weight memory and reduces headroom. Compare answers on your own task; higher precision does not guarantee a useful improvement, and this page does not establish inference speed.",
+      "values": [
+        "## Why does the exact RTX 3080 variant matter?\n\nNVIDIA lists **10 GB and 12 GB RTX 3080 variants**. This page uses 10 GB. A recommendation calculated for the 12 GB version can exceed this card’s budget; select the exact model in the Finder.\n\n## Should I try a 14B model?\n\nAt Q4 and 4K, Qwen3 14B exceeds this FP16-cache budget. The 14B Coder is a tight planning fit, with less than 0.5 GiB left after the reserve; its cache precision is not verified. Start with a smaller model and check the runtime’s reported allocation before trying it.\n\n## Can I increase Q4 to Q5?\n\nCheck the exact model’s Q5 profile in the Finder first, keeping context fixed. It uses more weight memory and reduces headroom. Compare answers on your own task; higher precision does not guarantee a useful improvement, and this page does not establish inference speed."
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K186",
+      "slug": "rtx-3080-10",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    },
+    {
+      "tab": "Knowledge Articles",
+      "range": "K190",
+      "slug": "rtx-4060",
+      "previous": "2026-10-03",
+      "values": [
+        "2026-10-05"
+      ]
+    }
+  ]
+}
