@@ -1,6 +1,6 @@
-import { speedAvailability } from './ui-state.js?v=20261001-approved-1';
+import { speedAvailability } from './ui-state.js?v=20261005-memory-1';
 import { GPUs, MODELS } from './data.js';
-import { recommend } from './recommend.js?v=20261001-approved-1';
+import { recommend } from './recommend.js?v=20261005-memory-1';
 import { fitLabel, fitDelta } from './presentation.js';
 import { huggingFaceAnchor } from './model-links.js?v=20260929e';
 import {modelPrefill} from './model-prefill.js';
@@ -103,7 +103,7 @@ function run(s, changes = {}, models = MODELS) {
 function card(item, hardware, label) {
   const speed = hardware.speedKnown ? `${item.speedLow}–${item.speedHigh} tok/s` : speedAvailability(hardware);
   const speedLabel = 'Estimated speed';
-  return `<article class="decision-card"><span class="decision-label">${label}</span><h3>${item.model.name}</h3><span class="reference-slot" data-reference-id="${item.model.id}" hidden></span><p>${item.quant.name} · ${fmt(item.requiredGB)} GB estimated memory</p><dl><div><dt>Task fit</dt><dd>${fitLabel(item.quality)}</dd></div><div><dt>${speedLabel}</dt><dd>${speed}</dd></div><div><dt>Model context limit</dt><dd>${item.model.contextK}K</dd></div></dl><p class="model-links">${huggingFaceAnchor(item.model)}</p></article>`;
+  return `<article class="decision-card"><span class="decision-label">${label}</span><h3>${item.model.name}</h3><span class="reference-slot" data-reference-id="${item.model.id}" hidden></span><p>${item.quant.name} · ${fmt(item.requiredGiB)} GiB estimated memory</p><dl><div><dt>Task fit</dt><dd>${fitLabel(item.quality)}</dd></div><div><dt>${speedLabel}</dt><dd>${speed}</dd></div><div><dt>Finder context ceiling</dt><dd>${item.model.contextK}K</dd></div></dl><p class="model-links">${huggingFaceAnchor(item.model)}</p></article>`;
 }
 
 function renderImprove() {
@@ -126,7 +126,7 @@ function renderImprove() {
   const alternative = alternatives.matches.find(x => x.model.id !== model.id) || alternatives.catalog.find(x => x.model.id !== model.id);
   if (!alternative) return void (improveContent.innerHTML = `<div class="decision-summary"><h3>Your current model is already among the only viable choices</h3><p>No different model survives the current filters and hardware limits.</p></div>${card(current, s.hardware, 'Current model')}`);
   const q = alternative.quality - current.quality;
-  const mem = alternative.requiredGB - current.requiredGB;
+  const mem = alternative.requiredGiB - current.requiredGiB;
   const speed = s.hardware.speedKnown ? alternative.speedLow - current.speedLow : null;
   const rank = alternative.rank - current.rank;
   let title = 'A trade-off, not a clear replacement', text = `${alternative.model.name} changes the balance, but not enough to call it an obvious upgrade.`, tone = '';
@@ -135,7 +135,7 @@ function renderImprove() {
   } else if (rank <= .02 && q <= 2) {
     title = 'Your current model remains competitive'; text = 'The best alternative does not create a large enough improvement to make switching compelling in the current ranking model.';
   }
-  improveContent.innerHTML = `<div class="decision-summary${tone}"><h3>${title}</h3><p>${text}</p><div class="delta-strip"><span>Task fit <strong>${fitDelta(q)}</strong></span><span>Memory <strong>${signed(mem)} GB</strong></span><span>Speed <strong>${speed === null ? 'not comparable' : `${signed(speed)} tok/s`}</strong></span></div></div><div class="decision-grid">${card(current, s.hardware, 'Current model')}${card(alternative, s.hardware, 'Best alternative')}</div><p class="journey-caveat">Capability and performance comparisons are planning estimates, not benchmark-grade measurements.</p>`;
+  improveContent.innerHTML = `<div class="decision-summary${tone}"><h3>${title}</h3><p>${text}</p><div class="delta-strip"><span>Task fit <strong>${fitDelta(q)}</strong></span><span>Memory <strong>${signed(mem)} GiB</strong></span><span>Speed <strong>${speed === null ? 'not comparable' : `${signed(speed)} tok/s`}</strong></span></div></div><div class="decision-grid">${card(current, s.hardware, 'Current model')}${card(alternative, s.hardware, 'Best alternative')}</div><p class="journey-caveat">Capability and performance comparisons are planning estimates, not benchmark-grade measurements.</p>`;
 }
 
 function budgets(s) {
@@ -174,7 +174,7 @@ function renderUpgrade() {
   const unit = s.customMemory ? 'GB available memory' : s.mode === 'gpu' ? 'GB VRAM' : s.mode === 'mac' ? 'GB unified memory' : 'GB RAM';
   const start = `${fmt(s.customMemory || s.mode === 'gpu' ? s.hardware.vramGB : s.hardware.ramGB)} ${unit}`;
   if (!milestones.length) return void (upgradeContent.innerHTML = `<div class="decision-summary"><h3>More memory does not quickly change the top recommendation</h3><p>Starting from ${start}, the tested higher-memory tiers did not create a meaningfully stronger top pick under these preferences.</p></div>${card(base, baseHardware, 'Current capacity pick')}<p class="journey-caveat">This isolates memory capacity only; it does not compare compute, bandwidth, price or measured speed.</p>`);
-  upgradeContent.innerHTML = `<div class="decision-summary decision-positive"><h3>Your current top capacity pick is ${base.model.name}</h3><p>Starting from ${start}, these are the first higher-memory tiers where the recommendation changes enough to matter.</p></div><div class="upgrade-list">${milestones.map(({amount,candidate,previous}) => `<article class="upgrade-milestone"><span class="decision-label">At ${amount} ${unit}</span><h3>${candidate.model.name}</h3><span class="reference-slot" data-reference-id="${candidate.model.id}" hidden></span><p>${previous.model.id === candidate.model.id ? `${previous.quant.name} → ${candidate.quant.name}` : `${previous.model.name} → ${candidate.model.name}`}</p><div class="milestone-meta"><span>Task fit <strong>${fitDelta(candidate.quality - previous.quality)}</strong></span><span>${candidate.quant.name}</span><span>${fmt(candidate.requiredGB)} GB estimated</span></div><p class="model-links">${huggingFaceAnchor(candidate.model)}</p></article>`).join('')}</div><p class="journey-caveat">Capacity-only simulation: compute, bandwidth, price and real benchmarks still matter.</p>`;
+  upgradeContent.innerHTML = `<div class="decision-summary decision-positive"><h3>Your current top capacity pick is ${base.model.name}</h3><p>Starting from ${start}, these are the first higher-memory tiers where the recommendation changes enough to matter.</p></div><div class="upgrade-list">${milestones.map(({amount,candidate,previous}) => `<article class="upgrade-milestone"><span class="decision-label">At ${amount} ${unit}</span><h3>${candidate.model.name}</h3><span class="reference-slot" data-reference-id="${candidate.model.id}" hidden></span><p>${previous.model.id === candidate.model.id ? `${previous.quant.name} → ${candidate.quant.name}` : `${previous.model.name} → ${candidate.model.name}`}</p><div class="milestone-meta"><span>Task fit <strong>${fitDelta(candidate.quality - previous.quality)}</strong></span><span>${candidate.quant.name}</span><span>${fmt(candidate.requiredGiB)} GiB estimated</span></div><p class="model-links">${huggingFaceAnchor(candidate.model)}</p></article>`).join('')}</div><p class="journey-caveat">Capacity-only simulation: compute, bandwidth, price and real benchmarks still matter.</p>`;
 }
 
 function refresh() { if (active === 'improve') renderImprove(); else if (active === 'upgrade') renderUpgrade(); }
@@ -217,4 +217,5 @@ form.addEventListener('input', schedule);
 currentInput.addEventListener('input', schedule); currentQuant.addEventListener('input', schedule);
 window.addEventListener('hashchange',()=>{applyModelPrefill();activate(new URLSearchParams(location.hash.slice(1)).get('j') || 'find',false);});
 activate(new URLSearchParams(location.hash.slice(1)).get('j') || 'find', false);
+
 

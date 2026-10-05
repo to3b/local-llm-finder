@@ -1,6 +1,6 @@
-import { speedAvailability } from './ui-state.js?v=20261001-approved-1';
+import { speedAvailability } from './ui-state.js?v=20261005-memory-1';
 import { GPUs, MODELS } from './data.js';
-import { recommend } from './recommend.js?v=20261001-approved-1';
+import { recommend } from './recommend.js?v=20261005-memory-1';
 import { fitLabel, isTopTie } from './presentation.js';
 import { huggingFaceAnchor } from './model-links.js?v=20260929e';
 
@@ -209,21 +209,21 @@ function updateTierSummaries() {
 }
 
 function row(item, hardware, primaryUse, useCases, slower = false, extra = false, isTop = false) {
-  const { model, quant, quality, requiredGB, speedLow, speedHigh, ramAdvisory } = item;
+  const { model, quant, quality, requiredGiB, speedLow, speedHigh, ramAdvisory } = item;
   const unknown = !hardware.speedKnown;
-  const fit = hardware.mode === 'gpu' ? `Fits in ${fmt(hardware.vramGB)} GB of graphics memory.` : hardware.mode === 'mac' ? `Likely fits in your Mac's available memory.` : `Likely fits with ${fmt(hardware.ramGB)} GB of RAM.`;
+  const fit = item.memoryFit === 'tight' ? 'Tight memory estimate: display use or runtime buffers may exceed this budget.' : hardware.mode === 'gpu' ? `Fits the planning budget of your ${fmt(hardware.vramGB)} GB card.` : hardware.mode === 'mac' ? `Fits your Mac's available planning budget.` : `Fits the planning budget with ${fmt(hardware.ramGB)} GB of RAM.`;
   const secondary = useCases.filter(key => key !== primaryUse);
   const useText = secondary.length ? `${taskNames[primaryUse]} first, with ${taskText(secondary)} as secondary needs` : taskNames[primaryUse];
   const why = `${fitLabel(quality)} fit for ${useText}. ${fit}`;
   const speed = unknown ? speedAvailability(hardware) : `${speedLow}–${speedHigh} tok/s`;
   const speedLabel = 'Estimated speed';
   const speedText = unknown ? 'Exact-device speed is not estimated for this setup.' : slower ? `Estimated speed is below your ${fmt(hardware.minSpeed)} tokens/second minimum.` : `Estimated speed meets your ${fmt(hardware.minSpeed)} tokens/second minimum.`;
-  const memoryContext = hardware.mode === 'gpu' ? `${fmt(requiredGB)} GB estimated with ${fmt(hardware.vramGB)} GB graphics memory` : hardware.mode === 'mac' ? `${fmt(requiredGB)} GB estimated with ${fmt(hardware.ramGB)} GB unified memory` : `${fmt(requiredGB)} GB estimated with ${fmt(hardware.ramGB)} GB RAM`;
+  const memoryContext = `${fmt(requiredGiB)} GiB estimated${item.memoryFit === 'tight' ? ' · tight fit' : ''}`;
   const preferenceLabel = preferenceNames[Number(priorityInput.value) - 1] || 'Balanced';
   const whyTop = isTop ? `<span class="why-top-match"><strong>Why this match</strong><span>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${memoryContext} · ranks highest for ${preferenceLabel} priority</span></span>` : '';
   return `<details class="model-row ${unknown ? 'speed-unavailable ' : ''}${extra ? 'hidden-row ' : ''}${isTop ? 'top-choice' : ''}">
-    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">Top match for your settings</span>' : ''}<strong>${model.name}</strong><span class="reference-slot" data-reference-id="${model.id}" hidden></span><small>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${parameterText(model.parametersB)} parameters · ${quant.name}${slower ? ' · Below speed target' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGB)} GB</strong></span>${unknown ? '' : `<span class="metric speed"><span>${speedLabel}</span><strong>${speed}</strong></span>`}<span class="chevron" aria-hidden="true"></span>${whyTop}</summary>
-    <div class="model-details"><p>${why} ${speedText}</p><p class="estimate-context">Context used for this estimate: ${(Number(form.elements.context.value) * 1000).toLocaleString('en-US')} tokens.</p><div class="detail-grid"><div><span class="detail-label">Model context limit</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div></div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGB)} GB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}<p class="model-links">${huggingFaceAnchor(model)}</p></div>
+    <summary><span class="model-title">${isTop ? '<span class="top-choice-badge">Top match for your settings</span>' : ''}<strong>${model.name}</strong><span class="reference-slot" data-reference-id="${model.id}" hidden></span><small>${fitLabel(quality)} ${taskShortNames[primaryUse]} fit · ${parameterText(model.parametersB)} parameters · ${quant.name}${item.memoryFit === 'tight' ? ' · Tight memory estimate' : ''}${slower ? ' · Below speed target' : ''}</small></span><span class="metric"><span>Memory</span><strong>${fmt(requiredGiB)} GiB</strong></span>${unknown ? '' : `<span class="metric speed"><span>${speedLabel}</span><strong>${speed}</strong></span>`}<span class="chevron" aria-hidden="true"></span>${whyTop}</summary>
+    <div class="model-details"><p>${why} ${speedText}</p><p class="estimate-context">Context used for this estimate: ${(Number(form.elements.context.value) * 1000).toLocaleString('en-US')} tokens. ${model.cacheType === 'f16' ? 'FP16 context cache.' : 'Cache precision is not verified for this profile.'}</p><div class="detail-grid"><div><span class="detail-label">Finder context ceiling</span><strong>${(model.contextK * 1000).toLocaleString('en-US')} tokens</strong></div>${model.nativeContextTokens ? `<div><span class="detail-label">Documented native context</span><strong>${model.nativeContextTokens.toLocaleString('en-US')} tokens</strong></div>` : ''}</div>${hardware.mode === 'gpu' && !ramAdvisory ? `<p class="ram-warning">Loading this model may need around ${fmt(item.hostRAMGiB)} GiB of computer RAM. You selected ${fmt(hardware.ramGB)} GB.</p>` : ''}${model.licenseNote ? `<p>License: ${model.licenseNote}. Check terms before use.</p>` : ''}<p class="model-links">${huggingFaceAnchor(model)}</p></div>
   </details>`;
 }
 
@@ -257,7 +257,7 @@ function render(data, hardware, primaryUse, useCases, contextK, settings) {
   const filterText = data.excluded.filters
     ? ` ${data.excluded.filters} models were removed by your quantization, family or file-size filters.`
     : '';
-  html += `<details class="method-note"><summary>How did we pick these?</summary><p>We estimate model memory, context overhead and headroom, then rank viable models for your main use and speed-versus-quality preference. ${data.excluded.memory} models did not fit the estimated memory; ${data.excluded.context} did not support ${(contextK * 1000).toLocaleString('en-US')} tokens.${filterText} Task fit is shown as a broad label because the underlying capability scores are still prototype ranking inputs, not benchmark-grade measurements. Speed is also an estimate unless stated otherwise.</p></details>`;
+  html += `<details class="method-note"><summary>How did we pick these?</summary><p>We estimate model memory, context overhead and headroom, then rank viable models for your main use and speed-versus-quality preference. ${data.excluded.memory} models exceeded the estimated memory budget; ${data.excluded.context} default model profiles did not include the requested ${(contextK * 1000).toLocaleString('en-US')}-token context.${filterText} Allocations are shown in GiB; downloaded files use decimal GB. Hardware capacities use their nominal memory tiers. Task fit uses prototype ranking inputs, not benchmark-grade measurements. Speed is also an estimate unless stated otherwise.</p></details>`;
   results.innerHTML = html;
   catalogLimit = 8;
 }
@@ -434,4 +434,3 @@ window.addEventListener('hashchange', () => {
   const mode = new URLSearchParams(location.hash.slice(1)).get('j') || 'find';
   document.querySelector('[data-journey="' + (['find','improve','upgrade'].includes(mode) ? mode : 'find') + '"]')?.click();
 });
-
